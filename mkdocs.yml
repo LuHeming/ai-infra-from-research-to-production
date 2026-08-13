@@ -1,0 +1,46 @@
+site_name: AI Infra — From Research to Production
+site_description: 从大模型压缩研究到 AI Infra 工程实践
+repo_name: LuHeming/ai-infra-from-research-to-production
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.tabs.link
+markdown_extensions:
+  - admonition
+  - attr_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+nav:
+  - 首页: index.md
+  - 基础:
+      - 学习入口: 00-foundations/index.md
+      - Linux 工程基础: 00-foundations/linux-fundamentals.md
+      - 开发环境: 00-foundations/development-environment.md
+  - PyTorch:
+      - 性能分析: 01-pytorch/profiler.md
+  - LLM 推理:
+      - 推理概览: 02-llm-inference/inference-overview.md
+  - 模型压缩:
+      - 压缩概览: 03-model-compression/overview.md
+      - 部署鸿沟: 03-model-compression/compression-deployment-gap.md
+  - CUDA: 04-cuda/index.md
+  - Triton: 05-triton/index.md
+  - 分布式: 06-distributed/index.md
+  - 推理服务: 07-serving/index.md
+  - 部署: 08-deployment/index.md
+  - Benchmark:
+      - 方法论: 09-benchmarking/benchmark-methodology.md
+  - 面试准备: 10-interview/index.md

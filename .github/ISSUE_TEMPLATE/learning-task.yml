@@ -1,0 +1,22 @@
+name: Learning task
+description: 记录一个待学习或待沉淀的 AI Infra 主题
+title: "[Learning] "
+labels: ["learning"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: 学习目标
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: 预期产出
+      description: 文档、实验、Benchmark 或排错记录
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: 参考资料

@@ -1,0 +1,27 @@
+name: Experiment
+description: 规划一个可复现实验
+title: "[Experiment] "
+labels: ["experiment"]
+body:
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: 假设
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: 环境与配置
+    validations:
+      required: true
+  - type: textarea
+    id: metrics
+    attributes:
+      label: 评价指标
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收条件

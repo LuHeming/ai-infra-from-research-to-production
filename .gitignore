@@ -1,0 +1,34 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+site/
+dist/
+build/
+*.egg-info/
+.DS_Store
+Thumbs.db
+
+# Large models and datasets
+models/
+checkpoints/
+datasets/
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.engine
+
+# Generated traces and large benchmark artifacts
+*.pt.trace.json
+*.nsys-rep
+*.sqlite
+benchmarks/raw-results/*.trace.json
+benchmarks/raw-results/*.log
