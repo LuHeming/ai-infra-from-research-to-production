@@ -20,5 +20,6 @@
 ## 推荐顺序
 
 1. [Linux 工程基础](linux-fundamentals.md)：文件、进程、资源、网络与远程开发。
-2. [开发环境与可复现性](development-environment.md)：记录版本、命令、输入与结果。
-3. [PyTorch 性能分析](../01-pytorch/profiler.md)：从系统观察进入算子级分析。
+2. [Python 工程基础](python-engineering.md)：项目结构、配置、日志、测试与复现。
+3. [开发环境与可复现性](development-environment.md)：记录版本、命令、输入与结果。
+4. [PyTorch 性能分析](../01-pytorch/profiler.md)：从系统观察进入算子级分析。

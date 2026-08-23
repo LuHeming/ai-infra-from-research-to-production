@@ -5,6 +5,7 @@
 - [ ] 配置主开发环境
 - [ ] 完成 Linux 文件、权限、进程、资源和网络基础练习
 - [ ] 使用 SSH、tmux 和 rsync 完成一次远程工作流
+- [ ] 将一次性 Python 脚本整理为可配置、可测试的最小工程
 - [ ] 掌握正确 GPU 计时
 - [ ] 使用 PyTorch Profiler 分析一个小型 LLM
 - [ ] 建立第一份性能基线
@@ -15,6 +16,8 @@
 - 如何从 PID 出发定位一个任务的命令、资源、文件与网络连接？
 - 退出码、标准流、管道和信号如何组成可观察的命令行工作流？
 - CPU、内存、磁盘或网络如何让 GPU 任务表现为“GPU 利用率低”？
+- 如何分离 Python CLI、配置、核心逻辑、日志、测试与生成物？
+- 如何从干净环境重建实验，并证明两次运行条件一致？
 - CUDA 异步执行为什么会导致错误计时？
 - 首次推理和稳定态推理为什么不同？
 - 模型时间主要花在哪些算子上？
@@ -34,10 +37,15 @@
 | Day 7 | Benchmark 与复盘 | 固化原始结果，完成 troubleshooting 和 weekly review |
 
 Linux 的详细知识、命令和练习见 [Linux 工程基础](../docs/00-foundations/linux-fundamentals.md)。
+Python 项目结构、配置、日志与测试见
+[Python 工程基础](../docs/00-foundations/python-engineering.md)。
+Tensor、正确计时与 trace 分析见
+[PyTorch 性能分析](../docs/01-pytorch/profiler.md)。
 
 ## 本周交付物
 
 - Linux 基础练习记录
+- Python 工程练习与测试记录
 - `docs/01-pytorch/profiler.md`
 - `labs/pytorch/profiler-demo/`
 - 一份环境 JSON

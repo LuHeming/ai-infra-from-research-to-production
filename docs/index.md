@@ -18,12 +18,13 @@
 ## 推荐阅读顺序
 
 1. [Linux 工程基础](00-foundations/linux-fundamentals.md)
-2. [开发环境与实验规范](00-foundations/development-environment.md)
-3. PyTorch 性能分析
-4. LLM Prefill、Decode 与 KV Cache
-5. PTQ/PTP 与部署鸿沟
-6. CUDA/Triton Kernel
-7. vLLM/TensorRT-LLM
-8. 分布式与 NCCL
-9. Docker、Slurm、Kubernetes
-10. 端到端 Benchmark
+2. [Python 工程基础](00-foundations/python-engineering.md)
+3. [开发环境与实验规范](00-foundations/development-environment.md)
+4. [PyTorch 性能分析](01-pytorch/profiler.md)
+5. LLM Prefill、Decode 与 KV Cache
+6. PTQ/PTP 与部署鸿沟
+7. CUDA/Triton Kernel
+8. vLLM/TensorRT-LLM
+9. 分布式与 NCCL
+10. Docker、Slurm、Kubernetes
+11. 端到端 Benchmark

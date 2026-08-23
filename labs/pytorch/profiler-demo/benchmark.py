@@ -11,12 +11,14 @@ from typing import Any
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Profile one Hugging Face causal language model.")
     parser.add_argument("--model", default="facebook/opt-125m")
+    parser.add_argument("--model-revision", default="main")
     parser.add_argument("--prompt", default="AI infrastructure is")
     parser.add_argument("--device", choices=["cpu", "cuda"], default="cuda")
     parser.add_argument("--dtype", choices=["float32", "float16", "bfloat16"], default="float16")
     parser.add_argument("--warmup", type=int, default=5)
     parser.add_argument("--repeat", type=int, default=20)
     parser.add_argument("--max-length", type=int, default=128)
+    parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--output-dir", type=Path, default=Path("results"))
     parser.add_argument("--no-profile", action="store_true")
     return parser.parse_args()
@@ -57,8 +59,16 @@ def main() -> None:
         raise SystemExit("float16 on CPU is not recommended; use --dtype float32 or bfloat16.")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
-    model = AutoModelForCausalLM.from_pretrained(args.model, torch_dtype=dtype)
+    torch.manual_seed(args.seed)
+    if args.device == "cuda":
+        torch.cuda.manual_seed_all(args.seed)
+
+    tokenizer = AutoTokenizer.from_pretrained(args.model, revision=args.model_revision)
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model,
+        revision=args.model_revision,
+        torch_dtype=dtype,
+    )
     model.eval().to(args.device)
 
     encoded = tokenizer(
@@ -97,35 +107,48 @@ def main() -> None:
                 profile_memory=True,
                 with_stack=True,
             ) as profiler:
-                model(**encoded)
+                with torch.profiler.record_function("model_forward"):
+                    model(**encoded)
                 synchronize(torch, args.device)
 
             trace_path = args.output_dir / "profile-trace.json"
             profiler.export_chrome_trace(str(trace_path))
             sort_key = "cuda_time_total" if args.device == "cuda" else "cpu_time_total"
-            print(profiler.key_averages().table(sort_by=sort_key, row_limit=15))
+            print(
+                profiler.key_averages(group_by_input_shape=True).table(
+                    sort_by=sort_key,
+                    row_limit=15,
+                )
+            )
 
     mean_ms = statistics.fmean(latencies_ms)
     peak_memory_mb = (
         torch.cuda.max_memory_allocated() / 1024**2 if args.device == "cuda" else None
     )
+    peak_reserved_mb = (
+        torch.cuda.max_memory_reserved() / 1024**2 if args.device == "cuda" else None
+    )
     result = {
         "model": args.model,
+        "model_revision": args.model_revision,
         "device": args.device,
         "dtype": args.dtype,
         "prompt": args.prompt,
         "input_tokens": input_tokens,
         "warmup_runs": args.warmup,
         "repeat_runs": args.repeat,
+        "seed": args.seed,
         "latency_ms": {
             "mean": mean_ms,
             "p50": percentile(latencies_ms, 0.50),
             "p95": percentile(latencies_ms, 0.95),
             "min": min(latencies_ms),
             "max": max(latencies_ms),
+            "samples": latencies_ms,
         },
         "input_tokens_per_second": input_tokens / (mean_ms / 1000),
-        "peak_memory_mb": peak_memory_mb,
+        "peak_allocated_memory_mb": peak_memory_mb,
+        "peak_reserved_memory_mb": peak_reserved_mb,
         "torch_version": torch.__version__,
         "cuda_version": torch.version.cuda,
     }

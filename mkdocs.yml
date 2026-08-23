@@ -28,9 +28,10 @@ nav:
   - 基础:
       - 学习入口: 00-foundations/index.md
       - Linux 工程基础: 00-foundations/linux-fundamentals.md
+      - Python 工程基础: 00-foundations/python-engineering.md
       - 开发环境: 00-foundations/development-environment.md
   - PyTorch:
-      - 性能分析: 01-pytorch/profiler.md
+      - 性能分析与 Profiler: 01-pytorch/profiler.md
   - LLM 推理:
       - 推理概览: 02-llm-inference/inference-overview.md
   - 模型压缩:
