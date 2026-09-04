@@ -25,6 +25,8 @@
 
 ## Week 2：LLM 推理系统与 vLLM
 
+[查看 Week 2 七天学习与验收计划](weekly/week-02-llm-inference-and-vllm.md)
+
 ### 学习内容
 
 - Prefill 与 Decode

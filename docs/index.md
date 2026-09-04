@@ -21,10 +21,10 @@
 2. [Python 工程基础](00-foundations/python-engineering.md)
 3. [开发环境与实验规范](00-foundations/development-environment.md)
 4. [PyTorch 性能分析](01-pytorch/profiler.md)
-5. LLM Prefill、Decode 与 KV Cache
+5. [LLM Prefill、Decode 与 KV Cache](02-llm-inference/inference-overview.md)
 6. PTQ/PTP 与部署鸿沟
 7. CUDA/Triton Kernel
-8. vLLM/TensorRT-LLM
+8. [vLLM 推理服务](07-serving/index.md)
 9. 分布式与 NCCL
 10. Docker、Slurm、Kubernetes
-11. 端到端 Benchmark
+11. [LLM 服务 Benchmark](09-benchmarking/llm-serving-benchmark.md)

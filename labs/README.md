@@ -14,3 +14,7 @@ lab-name/
 ```
 
 README 必须包含目标、环境、命令、指标、结果、分析和局限。
+
+## 可运行实验
+
+- [Week 2：vLLM 流式并发压测](vllm-serving-benchmark/README.md)

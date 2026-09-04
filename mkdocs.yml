@@ -34,14 +34,17 @@ nav:
       - 性能分析与 Profiler: 01-pytorch/profiler.md
   - LLM 推理:
       - 推理概览: 02-llm-inference/inference-overview.md
+      - KV Cache 与调度: 02-llm-inference/kv-cache-and-scheduling.md
   - 模型压缩:
       - 压缩概览: 03-model-compression/overview.md
       - 部署鸿沟: 03-model-compression/compression-deployment-gap.md
   - CUDA: 04-cuda/index.md
   - Triton: 05-triton/index.md
   - 分布式: 06-distributed/index.md
-  - 推理服务: 07-serving/index.md
+  - 推理服务:
+      - vLLM 实践: 07-serving/index.md
   - 部署: 08-deployment/index.md
   - Benchmark:
       - 方法论: 09-benchmarking/benchmark-methodology.md
+      - LLM 服务 Benchmark: 09-benchmarking/llm-serving-benchmark.md
   - 面试准备: 10-interview/index.md

@@ -1,0 +1,5 @@
+{"prompt":"Explain prefill and decode in two concise sentences."}
+{"prompt":"Why does KV cache memory grow with sequence length?"}
+{"prompt":"What problem does continuous batching solve?"}
+{"prompt":"Describe one trade-off of chunked prefill."}
+{"prompt":"Define time to first token for an LLM service."}
