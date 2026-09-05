@@ -31,11 +31,12 @@
 
 | 阶段 | 主题 | 目标状态 |
 |---|---|---|
-| Week 1 | Linux、Python 工程、PyTorch Profiler | 🚧 进行中 |
-| Week 2 | LLM 推理、KV Cache、vLLM | ⏳ 待开始 |
-| Week 3 | CUDA、Triton、量化 Kernel | ⏳ 待开始 |
-| Week 4 | 分布式、NCCL、综合项目 | ⏳ 待开始 |
-| Week 5–8 | TensorRT-LLM、Docker、Slurm、Kubernetes、CI | ⏳ 待开始 |
+| Week 1 | Linux、Python 工程、PyTorch Profiler | ✅ 已完成 |
+| Week 2 | LLM 推理、KV Cache、vLLM | ✅ 已完成 |
+| Week 3 | Model Compression：量化、剪枝、低秩、蒸馏 | 🚧 进行中 |
+| Week 4 | CUDA、Triton、量化 Kernel | ⏳ 待开始 |
+| Week 5 | 分布式、NCCL、综合项目 | ⏳ 待开始 |
+| Week 6–9 | TensorRT-LLM、Docker、Slurm、Kubernetes、CI | ⏳ 待开始 |
 
 详细计划见 [ROADMAP.md](ROADMAP.md)。
 

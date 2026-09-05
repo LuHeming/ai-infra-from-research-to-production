@@ -2,7 +2,7 @@
 
 ## 总体目标
 
-用 4 周建立可求职的 AI Infra 基础能力，用 8 周完成一个能够公开展示的压缩部署项目。
+用 5 周建立可求职的 AI Infra 基础能力，用 9 周完成一个能够公开展示的压缩部署项目。
 
 ## Week 1：工程基础与 PyTorch 性能分析
 
@@ -45,7 +45,26 @@
 - 并发请求客户端
 - 输入/输出长度与性能关系分析
 
-## Week 3：CUDA 与 Triton
+## Week 3：Model Compression 从算法到部署
+
+[查看 Week 3 七天学习与验收计划](weekly/week-03-model-compression.md)
+
+### 学习内容
+
+- Weight-only INT8/INT4、粒度、校准与离群值
+- PTQ、QAT、GPTQ、AWQ、SmoothQuant
+- 非结构化、结构化与 2:4 半结构化剪枝
+- SVD 低秩分解与知识蒸馏
+- 算法、表示、Kernel、系统四层联合评估
+
+### 交付物
+
+- 一组 Group Size、Sparsity 和 Rank 扫描结果
+- 一个可运行的量化/剪枝/低秩实验 Lab
+- 一份压缩率—精度—性能联合报告
+- 一个“压缩成功但没有加速”的 Profiler 反例
+
+## Week 4：CUDA 与 Triton
 
 ### 学习内容
 
@@ -64,7 +83,7 @@
 - 一个块级量化或反量化 Kernel
 - 多种 shape 下的误差和性能报告
 
-## Week 4：分布式与综合项目
+## Week 5：分布式与综合项目
 
 ### 学习内容
 
@@ -81,7 +100,7 @@
 - TP 矩阵切分示例
 - LLM Compression Serving Benchmark v0.1
 
-## Week 5–8：工程深化
+## Week 6–9：工程深化
 
 - TensorRT-LLM
 - Nsight Systems / Nsight Compute

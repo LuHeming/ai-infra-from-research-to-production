@@ -2,6 +2,12 @@
 
 每周复盘用于将每日碎片压缩成可复用知识。
 
+## 学习计划入口
+
+- [Week 1：工程基础与 PyTorch Profiler](week-01-foundations-and-profiling.md)
+- [Week 2：LLM 推理系统与 vLLM](week-02-llm-inference-and-vllm.md)
+- [Week 3：Model Compression](week-03-model-compression.md)
+
 每周至少回答：
 
 1. 本周完成了什么？

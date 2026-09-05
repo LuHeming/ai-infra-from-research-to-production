@@ -34,3 +34,9 @@ opt-125m_fp16_2026-08-05_run01.json
 - latency mean / p50 / p95
 - throughput
 - peak memory
+## Week 3：Model Compression
+
+- [实验配置模板](configs/week-03-compression.yaml)
+- [报告模板](reports/week-03-compression-report.md)
+- 原始结果统一写入 raw-results/week-03/，不要手工修改。
+- 报告必须同时包含正确性、表示格式、Kernel 证据和系统性能。

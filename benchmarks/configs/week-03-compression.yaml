@@ -1,0 +1,81 @@
+run:
+  id: week3-method-shape-seed
+  timestamp: null
+  git_commit: null
+  notes: null
+
+environment:
+  python: null
+  pytorch: null
+  cuda: null
+  driver: null
+  gpu: null
+  cpu: null
+
+model:
+  repository: facebook/opt-125m
+  revision: null
+  tokenizer_revision: null
+  baseline_dtype: bf16
+
+data:
+  calibration:
+    name: null
+    revision: null
+    samples: 128
+    sequence_length: 512
+    seed: 42
+  validation:
+    name: null
+    revision: null
+  test:
+    name: null
+    revision: null
+
+compression:
+  method: null
+  weight_bits: null
+  activation_dtype: null
+  symmetric: null
+  granularity: null
+  group_size: null
+  zero_point: null
+  clipping: null
+  sparsity: null
+  sparsity_pattern: null
+  rank: null
+  excluded_layers: []
+
+execution:
+  backend: null
+  compile: false
+  kernel: null
+  batch_size: 1
+  input_length: 512
+  output_length: 128
+  warmup: 10
+  repetitions: 3
+
+quality_metrics:
+  weight_relative_mse: null
+  output_cosine: null
+  ppl: null
+  task_accuracy: null
+
+system_metrics:
+  checkpoint_bytes: null
+  peak_memory_bytes: null
+  ttft_ms_p50: null
+  ttft_ms_p95: null
+  tpot_ms_p50: null
+  tpot_ms_p95: null
+  output_tokens_per_second: null
+  request_success_rate: null
+
+evidence:
+  weight_type: null
+  weight_dtype: null
+  weight_layout: null
+  profiler_trace: null
+  raw_result: null
+  limitations: []
