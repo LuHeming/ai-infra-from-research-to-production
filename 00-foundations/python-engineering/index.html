@@ -1,0 +1,2477 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="从大模型压缩研究到 AI Infra 工程实践">
+      
+      
+      
+      
+        <link rel="prev" href="../linux-fundamentals/">
+      
+      
+        <link rel="next" href="../development-environment/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Python 工程基础 - AI Infra — From Research to Production</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#python" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="AI Infra — From Research to Production" class="md-header__button md-logo" aria-label="AI Infra — From Research to Production" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Infra — From Research to Production
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Python 工程基础
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  基础
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../01-pytorch/profiler/" class="md-tabs__link">
+          
+  
+  
+  PyTorch
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../02-llm-inference/inference-overview/" class="md-tabs__link">
+          
+  
+  
+  LLM 推理
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../03-model-compression/overview/" class="md-tabs__link">
+          
+  
+  
+  模型压缩
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../04-cuda/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CUDA
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../05-triton/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Triton
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../06-distributed/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  分布式
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../07-serving/" class="md-tabs__link">
+          
+  
+  
+  推理服务
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../08-deployment/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  部署
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../09-benchmarking/benchmark-methodology/" class="md-tabs__link">
+          
+  
+  
+  Benchmark
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../10-interview/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  面试准备
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AI Infra — From Research to Production" class="md-nav__button md-logo" aria-label="AI Infra — From Research to Production" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Infra — From Research to Production
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    基础
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    基础
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    学习入口
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../linux-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux 工程基础
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python 工程基础
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python 工程基础
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 从脚本到项目的边界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 解释器、虚拟环境与依赖
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 解释器、虚拟环境与依赖">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 先确认你运行的是哪个 Python
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 使用可重建的虚拟环境
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 区分依赖声明与环境快照
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 模块、包与导入
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 模块、包与导入">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 基本概念
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 让导入没有重副作用
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 配置设计：显式、可校验、可记录
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 命令行接口
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 路径、文件与结构化输出
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-print" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 日志：记录事件，不是到处 print
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 异常、退出码与资源清理
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 类型标注与数据模型
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. 测试：先测纯逻辑，再测昂贵集成
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. 可复现性与随机性
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Python 与性能的边界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. 代码质量与自动化
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. 第一周 Python 工程实战
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 第一周 Python 工程实战">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 A：解释器与项目结构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 B：配置、日志与结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 C：测试与失败路径
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 D：可复现检查
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. 第一周完成检查表
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. 官方参考
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development-environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发环境
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PyTorch
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PyTorch
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01-pytorch/profiler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    性能分析与 Profiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM 推理
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LLM 推理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02-llm-inference/inference-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    推理概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02-llm-inference/kv-cache-and-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    KV Cache 与调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模型压缩
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    模型压缩
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03-model-compression/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    压缩概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03-model-compression/compression-deployment-gap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署鸿沟
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../04-cuda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CUDA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05-triton/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Triton
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06-distributed/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    分布式
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    推理服务
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    推理服务
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../07-serving/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    vLLM 实践
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../08-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmark
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Benchmark
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-benchmarking/benchmark-methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    方法论
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-benchmarking/llm-serving-benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM 服务 Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../10-interview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    面试准备
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 从脚本到项目的边界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 解释器、虚拟环境与依赖
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 解释器、虚拟环境与依赖">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 先确认你运行的是哪个 Python
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 使用可重建的虚拟环境
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 区分依赖声明与环境快照
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 模块、包与导入
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 模块、包与导入">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 基本概念
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 让导入没有重副作用
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 配置设计：显式、可校验、可记录
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 命令行接口
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 路径、文件与结构化输出
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-print" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 日志：记录事件，不是到处 print
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 异常、退出码与资源清理
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 类型标注与数据模型
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. 测试：先测纯逻辑，再测昂贵集成
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. 可复现性与随机性
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Python 与性能的边界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. 代码质量与自动化
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. 第一周 Python 工程实战
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 第一周 Python 工程实战">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 A：解释器与项目结构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 B：配置、日志与结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 C：测试与失败路径
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 D：可复现检查
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. 第一周完成检查表
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. 官方参考
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="python">Python 工程基础：把实验脚本变成可复现项目<a class="headerlink" href="#python" title="Permanent link">&para;</a></h1>
+<p>AI Infra 中的 Python 既负责模型实验，也负责配置管理、数据处理、
+Benchmark、服务入口和自动化工具。一个脚本“能运行”只是起点；工程化的目标是让它：</p>
+<ul>
+<li>换一台机器仍能安装和运行；</li>
+<li>输入、配置、环境和输出都有记录；</li>
+<li>出错时能从日志和异常中定位原因；</li>
+<li>核心逻辑可以测试、复用和审查；</li>
+<li>性能实验不会被隐式状态或错误统计污染。</li>
+</ul>
+<h2 id="1">1. 从脚本到项目的边界<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>一次性验证可以从单文件开始，但出现以下任一情况时就应该拆分：</p>
+<ul>
+<li>同一段逻辑被两个入口复用；</li>
+<li>参数超过三到五个，或需要多组实验配置；</li>
+<li>需要测试、日志、缓存、结果文件或多个模型后端；</li>
+<li>需要其他人安装和执行；</li>
+<li>需要区分“业务逻辑”和“命令行/文件系统副作用”。</li>
+</ul>
+<p>推荐的最小布局：</p>
+<div class="highlight"><pre><span></span><code>my-benchmark/
+├── pyproject.toml
+├── README.md
+├── src/
+│   └── my_benchmark/
+│       ├── __init__.py
+│       ├── cli.py
+│       ├── config.py
+│       ├── runner.py
+│       └── metrics.py
+├── tests/
+│   ├── test_config.py
+│   └── test_metrics.py
+└── results/
+</code></pre></div>
+<p>职责划分：</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cli.py</code></td>
+<td>解析参数、调用核心逻辑、设置退出码</td>
+</tr>
+<tr>
+<td><code>config.py</code></td>
+<td>配置结构、默认值和合法性校验</td>
+</tr>
+<tr>
+<td><code>runner.py</code></td>
+<td>模型加载、warmup、执行和资源清理</td>
+</tr>
+<tr>
+<td><code>metrics.py</code></td>
+<td>纯统计逻辑，便于单元测试</td>
+</tr>
+<tr>
+<td><code>tests/</code></td>
+<td>验证边界条件和回归行为</td>
+</tr>
+<tr>
+<td><code>results/</code></td>
+<td>生成物，不应与源代码混在一起</td>
+</tr>
+</tbody>
+</table>
+<p><code>src/</code> 布局可避免测试时意外从仓库根目录导入未安装的包，
+更接近用户实际安装后的行为。小型学习仓库也可以不使用 <code>src/</code>，
+但必须明确包根目录和运行入口。</p>
+<h2 id="2">2. 解释器、虚拟环境与依赖<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21-python">2.1 先确认你运行的是哪个 Python<a class="headerlink" href="#21-python" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>--version
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import sys; print(sys.executable)"</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>--version
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>list
+</code></pre></div>
+<p>优先写 <code>python -m pip</code>，因为它明确使用当前 Python 对应的 pip。
+<code>pip install</code> 和 <code>python</code> 可能来自不同环境，这是常见的“已经安装但导入失败”根因。</p>
+<h3 id="22">2.2 使用可重建的虚拟环境<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-dev.txt
+</code></pre></div>
+<p>Windows PowerShell 激活命令为：</p>
+<div class="highlight"><pre><span></span><code><span class="p">.</span><span class="n">venv</span><span class="p">\</span><span class="n">Scripts</span><span class="p">\</span><span class="n">Activate</span><span class="p">.</span><span class="n">ps1</span>
+</code></pre></div>
+<p>虚拟环境是可丢弃、可重建的运行环境，不应提交到 Git，也不应复制到另一台机器。
+依赖文件描述“如何重建”，环境采集描述“这次实际用了什么”。</p>
+<h3 id="23">2.3 区分依赖声明与环境快照<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>pyproject.toml</code>：项目元数据、直接依赖和工具配置的主要入口。</li>
+<li><code>requirements*.txt</code>：简单环境或 CI 中常用的安装清单。</li>
+<li>lock 文件：固定完整依赖解析结果，适合需要严格复现的应用。</li>
+<li><code>pip freeze</code>：当前环境快照，不等于经过设计的直接依赖列表。</li>
+</ul>
+<p>AI 项目还要记录 PyTorch 构建版本、CUDA Runtime、驱动和 GPU 型号。
+同一个 Python 包版本在不同 CUDA 构建下并不等价。</p>
+<h2 id="3">3. 模块、包与导入<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h3 id="31">3.1 基本概念<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<ul>
+<li>模块通常是一个 <code>.py</code> 文件。</li>
+<li>包是可被导入的模块集合，常包含 <code>__init__.py</code>。</li>
+<li>导入时 Python 按 <code>sys.path</code> 查找模块，并在首次导入后缓存到 <code>sys.modules</code>。</li>
+</ul>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import sys; print(*sys.path, sep='\n')"</span>
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import torch; print(torch.__file__)"</span>
+</code></pre></div>
+<p>不要用下面这些办法长期修复导入问题：</p>
+<ul>
+<li>在源码里随意 <code>sys.path.append(...)</code>；</li>
+<li>设置全局 <code>PYTHONPATH</code> 指向个人目录；</li>
+<li>把脚本命名为 <code>torch.py</code>、<code>json.py</code> 或 <code>logging.py</code>，遮蔽真实模块；</li>
+<li>依赖“必须从某个目录执行”的隐式前提。</li>
+</ul>
+<p>开发本地包时可使用 editable install：</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+python<span class="w"> </span>-m<span class="w"> </span>my_benchmark.cli<span class="w"> </span>--help
+</code></pre></div>
+<h3 id="32">3.2 让导入没有重副作用<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<p>模块导入时不应该自动下载模型、解析全部命令行、占用 GPU 或启动服务。
+入口代码放入 <code>main()</code>：</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">run</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">0</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<p>这样核心模块可以安全地被测试和复用，退出码也由入口统一管理。</p>
+<h2 id="4">4. 配置设计：显式、可校验、可记录<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<p>配置来源通常有四层，优先级应写清楚：</p>
+<div class="highlight"><pre><span></span><code>代码默认值 &lt; 配置文件 &lt; 环境变量 &lt; 命令行参数
+</code></pre></div>
+<p>敏感信息适合环境变量或密钥系统；实验超参数适合可版本控制的配置文件；
+临时覆盖适合命令行。不要把 token 写进 YAML、日志或结果 JSON。</p>
+<p>用 dataclass 表达经过校验的运行配置：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span><span class="p">,</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BenchmarkConfig</span><span class="p">:</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cuda"</span>
+    <span class="n">warmup</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">repeat</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"results"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">warmup</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"warmup must be non-negative"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">repeat</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"repeat must be positive"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">"output_dir"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+</code></pre></div>
+<p>配置保存到结果中时，应保存解析后的最终值，而不是只保存用户显式输入的部分。</p>
+<h2 id="5">5. 命令行接口<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<p>一个合格的 CLI 至少应该：</p>
+<ul>
+<li>提供 <code>--help</code>；</li>
+<li>明确类型、默认值和合法选项；</li>
+<li>非法参数返回非零退出码；</li>
+<li>不通过交互式输入阻塞自动化任务；</li>
+<li>将输出目录、随机种子和运行模式设为显式参数。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_args</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">argparse</span><span class="o">.</span><span class="n">Namespace</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Run a reproducible inference benchmark."</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--model"</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--device"</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">"cpu"</span><span class="p">,</span> <span class="s2">"cuda"</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--repeat"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">"--output-dir"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">Path</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">"results"</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+</code></pre></div>
+<p>脚本被自动化调用时，stdout 适合机器可消费的最终结果，stderr 适合诊断信息。
+如果面向人和机器两类消费者，最好把结构化结果写入 JSON/CSV，日志单独输出。</p>
+<h2 id="6">6. 路径、文件与结构化输出<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<p>使用 <code>pathlib.Path</code>，避免手工拼接 <code>/</code> 和 <code>\</code>：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">write_json</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">temporary</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">suffix</span> <span class="o">+</span> <span class="s2">".tmp"</span><span class="p">)</span>
+    <span class="n">temporary</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">temporary</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+</code></pre></div>
+<p>这里先写临时文件再替换，能降低进程中断后留下半个 JSON 的概率。
+并发写同一路径时还需要唯一运行目录、文件锁或外部存储事务。</p>
+<p>实验输出建议按运行隔离：</p>
+<div class="highlight"><pre><span></span><code>results/
+└── 2026-08-20T120000Z-opt125m-fp16/
+    ├── config.json
+    ├── environment.json
+    ├── benchmark.json
+    ├── run.log
+    └── profile-trace.json
+</code></pre></div>
+<p>原始结果一旦生成就不手工修改；派生表格和图从原始 JSON/CSV 自动生成。</p>
+<h2 id="7-print">7. 日志：记录事件，不是到处 print<a class="headerlink" href="#7-print" title="Permanent link">&para;</a></h2>
+<p>库代码使用模块级 logger，入口统一配置格式、级别和输出位置：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">configure_logging</span><span class="p">(</span><span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+        <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span> <span class="k">if</span> <span class="n">verbose</span> <span class="k">else</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+        <span class="nb">format</span><span class="o">=</span><span class="s2">"</span><span class="si">%(asctime)s</span><span class="s2"> </span><span class="si">%(levelname)s</span><span class="s2"> </span><span class="si">%(name)s</span><span class="s2"> </span><span class="si">%(message)s</span><span class="s2">"</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"loading model name=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</code></pre></div>
+<p>建议在日志中包含：</p>
+<ul>
+<li>时间、级别、模块名和事件；</li>
+<li>模型、设备、dtype、shape、batch size 和 run id；</li>
+<li>阶段边界，如 load、warmup、measure、profile、save；</li>
+<li>异常堆栈和可操作的上下文。</li>
+</ul>
+<p>避免记录 token、密码、私钥、完整请求正文和未脱敏的数据路径。
+高频循环内的日志会改变性能，Benchmark 测量区间应关闭不必要日志。</p>
+<h2 id="8">8. 异常、退出码与资源清理<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<p>异常应在能够补充上下文或恢复的位置捕获，不要用空 <code>except</code> 吞掉根因：</p>
+<div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">run_benchmark</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"input file is missing: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">exc</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">2</span>
+<span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"benchmark failed model=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">1</span>
+</code></pre></div>
+<p>规则：</p>
+<ul>
+<li>参数和配置错误尽早失败；</li>
+<li>异常链使用 <code>raise NewError(...) from exc</code> 保留原始原因；</li>
+<li>可预期错误给出修复建议；</li>
+<li>不可恢复错误返回非零退出码；</li>
+<li>文件、锁和临时资源用上下文管理器释放。</li>
+</ul>
+<p>不要在捕获 CUDA OOM 后假装本轮结果有效。记录失败配置，释放引用，
+必要时终止当前进程，重新启动一个干净进程继续实验矩阵。</p>
+<h2 id="9">9. 类型标注与数据模型<a class="headerlink" href="#9" title="Permanent link">&para;</a></h2>
+<p>类型标注的价值是让模块边界、可空值和数据形状更清晰，而不是消灭所有运行时错误。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">percentile</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"values must not be empty"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">q</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"q must be between 0 and 1"</span><span class="p">)</span>
+    <span class="o">...</span>
+</code></pre></div>
+<p>建议优先标注：</p>
+<ul>
+<li>公共函数参数和返回值；</li>
+<li>配置、结果和外部 I/O 边界；</li>
+<li><code>None</code>、异常和多种返回类型；</li>
+<li>回调函数和可迭代对象。</li>
+</ul>
+<p>Tensor 的 dtype、device 和 shape 通常不能只靠普通 Python 类型完整表达，
+仍需运行时断言、测试和结果元数据。</p>
+<h2 id="10">10. 测试：先测纯逻辑，再测昂贵集成<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
+<p>测试金字塔可以分为：</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>示例</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单元测试</td>
+<td>分位数、配置校验、路径生成</td>
+<td>快、确定、无需 GPU</td>
+</tr>
+<tr>
+<td>集成测试</td>
+<td>小模型一次 CPU 前向</td>
+<td>检查模块协作</td>
+</tr>
+<tr>
+<td>GPU smoke test</td>
+<td>CUDA 可用时运行小 shape</td>
+<td>数量少、条件跳过</td>
+</tr>
+<tr>
+<td>Benchmark 回归</td>
+<td>固定环境比较性能分布</td>
+<td>不能当普通单测运行</td>
+</tr>
+</tbody>
+</table>
+<p>pytest 示例：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">my_benchmark.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">percentile</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_percentile_rejects_empty_values</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s2">"must not be empty"</span><span class="p">):</span>
+        <span class="n">percentile</span><span class="p">([],</span> <span class="mf">0.5</span><span class="p">)</span>
+
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span>
+    <span class="p">(</span><span class="s2">"values"</span><span class="p">,</span> <span class="s2">"q"</span><span class="p">,</span> <span class="s2">"expected"</span><span class="p">),</span>
+    <span class="p">[([</span><span class="mf">1.0</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)],</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_percentile</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">expected</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">assert</span> <span class="n">percentile</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span> <span class="o">==</span> <span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span>
+</code></pre></div>
+<p>GPU、网络和大模型测试不应成为所有开发者运行单元测试的前提。
+通过 marker、环境检测和小型 fixture 把它们隔离。</p>
+<h2 id="11">11. 可复现性与随机性<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
+<p>固定随机种子只是可复现的一部分：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">seed_everything</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">manual_seed_all</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</code></pre></div>
+<p>还要固定或记录：</p>
+<ul>
+<li>代码 commit、依赖版本和模型 revision；</li>
+<li>数据集版本、样本顺序和预处理；</li>
+<li>dtype、device、shape、batch、线程数和环境变量；</li>
+<li>warmup、repeat、同步点和统计方法；</li>
+<li>确定性算法设置及其性能影响。</li>
+</ul>
+<p>完全确定性可能降低性能或不被某些算子支持。正确做法是明确目标：
+功能回归需要尽量确定；真实性能测试需要记录实际生产设置，不能为了复现而偷偷改变算法。</p>
+<h2 id="12-python">12. Python 与性能的边界<a class="headerlink" href="#12-python" title="Permanent link">&para;</a></h2>
+<p>Python 代码不一定是 GPU 工作负载的瓶颈，但以下模式很常见：</p>
+<ul>
+<li>循环启动大量小 Kernel，CPU launch 开销占比高；</li>
+<li>在热路径中调用 <code>.item()</code>、<code>.cpu()</code> 或打印 CUDA Tensor，引入同步；</li>
+<li>每轮重新创建 Tensor、Tokenizer 或模型；</li>
+<li>用 Python 列表逐元素处理本可向量化的数据；</li>
+<li>频繁 JSON 序列化、日志或磁盘写入污染测量区间；</li>
+<li>数据加载进程、线程或 GIL 限制让 GPU 等待输入。</li>
+</ul>
+<p>优化顺序应是：先定义端到端指标，再测量，再用 Profiler 找证据，最后修改。
+不要因为“Python 慢”就提前改写成 C++ 或增加多进程。</p>
+<h2 id="13">13. 代码质量与自动化<a class="headerlink" href="#13" title="Permanent link">&para;</a></h2>
+<p>本仓库的最小检查：</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>.
+python<span class="w"> </span>-m<span class="w"> </span>pytest
+python<span class="w"> </span>-m<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
+</code></pre></div>
+<p>提交前还应检查：</p>
+<ul>
+<li><code>git diff --check</code> 没有空白错误；</li>
+<li>没有模型权重、数据集、trace 和缓存；</li>
+<li>没有密钥、<code>.env</code> 或私人路径；</li>
+<li>README 中的命令可以从干净环境执行；</li>
+<li>生成物与源代码分离。</li>
+</ul>
+<p>CI 是团队共享的最低门槛，不替代本地测试，也不能证明性能结论正确。</p>
+<h2 id="14-python">14. 第一周 Python 工程实战<a class="headerlink" href="#14-python" title="Permanent link">&para;</a></h2>
+<h3 id="a">练习 A：解释器与项目结构<a class="headerlink" href="#a" title="Permanent link">&para;</a></h3>
+<ol>
+<li>创建 <code>.venv</code> 并确认 <code>python</code>、<code>pip</code> 指向同一环境。</li>
+<li>将一个单文件脚本拆为 CLI、配置、核心逻辑和指标模块。</li>
+<li>使用 <code>python -m package.cli --help</code> 运行入口。</li>
+<li>解释为什么导入核心模块不会加载模型或占用 GPU。</li>
+</ol>
+<h3 id="b">练习 B：配置、日志与结果<a class="headerlink" href="#b" title="Permanent link">&para;</a></h3>
+<ol>
+<li>用 dataclass 表达模型、设备、dtype、warmup 和 repeat。</li>
+<li>对非法配置尽早抛错。</li>
+<li>为 load、warmup、measure 和 save 阶段增加结构化日志字段。</li>
+<li>将最终配置、环境和结果写入独立运行目录。</li>
+</ol>
+<h3 id="c">练习 C：测试与失败路径<a class="headerlink" href="#c" title="Permanent link">&para;</a></h3>
+<ol>
+<li>为分位数函数编写正常值、边界值和异常测试。</li>
+<li>用临时目录测试 JSON 输出，不污染仓库。</li>
+<li>模拟 CUDA 不可用、输出目录不可写和非法 dtype。</li>
+<li>运行 Ruff 与 pytest，修复所有错误。</li>
+</ol>
+<h3 id="d">练习 D：可复现检查<a class="headerlink" href="#d" title="Permanent link">&para;</a></h3>
+<p>从空环境重新安装并运行一次：</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv-rebuild
+<span class="nb">source</span><span class="w"> </span>.venv-rebuild/bin/activate
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-dev.txt
+python<span class="w"> </span>-m<span class="w"> </span>pytest
+</code></pre></div>
+<p>对比两次环境记录，说明哪些信息相同、哪些仍可能导致不同结果。</p>
+<h2 id="15">15. 第一周完成检查表<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能解释模块、包、入口、<code>sys.path</code> 和虚拟环境的关系。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能将 CLI、副作用和可测试核心逻辑分离。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能设计显式、可校验、可保存的运行配置。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能用 logging 记录阶段和上下文，而不污染测量区间。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能安全地写入结构化结果并隔离每次运行。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能正确传播异常、退出码并清理资源。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能为纯逻辑、集成路径和 GPU 路径设计分层测试。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能记录代码、依赖、模型、数据、硬件和 Benchmark 方法。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能识别 Python 热路径中的同步、I/O 和小 Kernel 问题。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能在干净环境中重建项目并通过全部检查。</li>
+</ul>
+<h2 id="16">16. 官方参考<a class="headerlink" href="#16" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.python.org/3/tutorial/modules.html">Python Modules</a></li>
+<li><a href="https://docs.python.org/3/library/venv.html">Python venv</a></li>
+<li><a href="https://docs.python.org/3/library/argparse.html">Python argparse</a></li>
+<li><a href="https://docs.python.org/3/howto/logging.html">Python logging HOWTO</a></li>
+<li><a href="https://docs.python.org/3/library/pathlib.html">Python pathlib</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2861 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="从大模型压缩研究到 AI Infra 工程实践">
+      
+      
+      
+      
+        <link rel="prev" href="../../00-foundations/development-environment/">
+      
+      
+        <link rel="next" href="../../02-llm-inference/inference-overview/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>性能分析与 Profiler - AI Infra — From Research to Production</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pytorch-profiler-trace" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="AI Infra — From Research to Production" class="md-header__button md-logo" aria-label="AI Infra — From Research to Production" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Infra — From Research to Production
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              性能分析与 Profiler
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../00-foundations/" class="md-tabs__link">
+          
+  
+  
+  基础
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  PyTorch
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../02-llm-inference/inference-overview/" class="md-tabs__link">
+          
+  
+  
+  LLM 推理
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../03-model-compression/overview/" class="md-tabs__link">
+          
+  
+  
+  模型压缩
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../04-cuda/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CUDA
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../05-triton/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Triton
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../06-distributed/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  分布式
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../07-serving/" class="md-tabs__link">
+          
+  
+  
+  推理服务
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../08-deployment/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  部署
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../09-benchmarking/benchmark-methodology/" class="md-tabs__link">
+          
+  
+  
+  Benchmark
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../10-interview/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  面试准备
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AI Infra — From Research to Production" class="md-nav__button md-logo" aria-label="AI Infra — From Research to Production" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Infra — From Research to Production
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    基础
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    基础
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../00-foundations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    学习入口
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../00-foundations/linux-fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux 工程基础
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../00-foundations/python-engineering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python 工程基础
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../00-foundations/development-environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发环境
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PyTorch
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PyTorch
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    性能分析与 Profiler
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    性能分析与 Profiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 先定义要回答的问题
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Tensor 内存模型是分析基础
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Tensor 内存模型是分析基础">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Tensor 不只是数值
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-viewreshape-contiguous" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 view、reshape 与 contiguous
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-dtype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 dtype 与显存估算
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 推理模式与测量边界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. CUDA 异步执行与正确计时
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. CUDA 异步执行与正确计时">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 为什么普通计时会错
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-cuda-event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 CUDA Event 设备侧计时
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-warmup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 warmup 与冷启动
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Benchmark 的最小规范
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-pytorch-profiler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. PyTorch Profiler 基本用法
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 长任务使用 schedule
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-key-averages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 如何读 key averages 表
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-cpugpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 如何读 CPU/GPU 时间线
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 如何读 CPU/GPU 时间线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模式 A：GPU 时间线有大空洞
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模式 B：大量很短的 Kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-memcpy-dtype-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模式 C：频繁 memcpy 或 dtype conversion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dcpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模式 D：CPU 调用后立刻等待
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. 内存分析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 内存分析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-allocated-reserved" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 先区分 allocated 与 reserved
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-profiler-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Profiler memory 字段怎么用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-oom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 OOM 排查顺序
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-record_function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. 用 record_function 标记业务阶段
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. 编译、量化与模型压缩分析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. 编译、量化与模型压缩分析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-torchcompile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.1 torch.compile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-fake-quant-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.2 fake quant 不等于低比特 Kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.3 稀疏和剪枝
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. 多 GPU 与分布式场景
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-profiler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Profiler 开销与数据安全
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. 常见误区
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-profiler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. 第一周 Profiler 实战
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 第一周 Profiler 实战">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#atensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 A：Tensor 与布局
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 B：错误计时与正确计时
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 C：算子与时间线
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 D：压缩前后对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. 第一周完成检查表
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. 官方参考
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM 推理
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LLM 推理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02-llm-inference/inference-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    推理概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02-llm-inference/kv-cache-and-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    KV Cache 与调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模型压缩
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    模型压缩
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03-model-compression/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    压缩概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03-model-compression/compression-deployment-gap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署鸿沟
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../04-cuda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CUDA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05-triton/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Triton
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06-distributed/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    分布式
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    推理服务
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    推理服务
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../07-serving/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    vLLM 实践
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../08-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmark
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Benchmark
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-benchmarking/benchmark-methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    方法论
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-benchmarking/llm-serving-benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM 服务 Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../10-interview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    面试准备
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 先定义要回答的问题
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Tensor 内存模型是分析基础
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Tensor 内存模型是分析基础">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-tensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Tensor 不只是数值
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-viewreshape-contiguous" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 view、reshape 与 contiguous
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-dtype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 dtype 与显存估算
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 推理模式与测量边界
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-cuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. CUDA 异步执行与正确计时
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. CUDA 异步执行与正确计时">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 为什么普通计时会错
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-cuda-event" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 CUDA Event 设备侧计时
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-warmup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 warmup 与冷启动
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-benchmark" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Benchmark 的最小规范
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-pytorch-profiler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. PyTorch Profiler 基本用法
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 长任务使用 schedule
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-key-averages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 如何读 key averages 表
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-cpugpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 如何读 CPU/GPU 时间线
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 如何读 CPU/GPU 时间线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模式 A：GPU 时间线有大空洞
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模式 B：大量很短的 Kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-memcpy-dtype-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模式 C：频繁 memcpy 或 dtype conversion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dcpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        模式 D：CPU 调用后立刻等待
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. 内存分析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 内存分析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-allocated-reserved" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 先区分 allocated 与 reserved
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-profiler-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Profiler memory 字段怎么用
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-oom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 OOM 排查顺序
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-record_function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. 用 record_function 标记业务阶段
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. 编译、量化与模型压缩分析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. 编译、量化与模型压缩分析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-torchcompile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.1 torch.compile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-fake-quant-kernel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.2 fake quant 不等于低比特 Kernel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.3 稀疏和剪枝
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. 多 GPU 与分布式场景
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-profiler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Profiler 开销与数据安全
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. 常见误区
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-profiler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. 第一周 Profiler 实战
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 第一周 Profiler 实战">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#atensor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 A：Tensor 与布局
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 B：错误计时与正确计时
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 C：算子与时间线
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 D：压缩前后对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. 第一周完成检查表
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. 官方参考
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="pytorch-profiler-trace">PyTorch 性能分析：从正确计时到 Profiler Trace<a class="headerlink" href="#pytorch-profiler-trace" title="Permanent link">&para;</a></h1>
+<p>模型参数量、理论 FLOPs 或文件大小下降，不代表端到端推理一定加速。
+性能分析的目标不是生成一张漂亮的 trace，而是建立一条证据链：</p>
+<div class="highlight"><pre><span></span><code>现象与指标
+  → 可复现 Benchmark
+  → CPU/GPU 时间线
+  → 高开销算子、内存或同步点
+  → 可验证的优化假设
+  → 相同条件下重新测量
+</code></pre></div>
+<h2 id="1">1. 先定义要回答的问题<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>Profiler 适合回答：</p>
+<ul>
+<li>CPU 时间花在哪些 PyTorch 算子和 Python 代码段？</li>
+<li>GPU 上执行了哪些 Kernel，它们何时开始、持续多久？</li>
+<li>CPU 是否及时向 GPU 提交工作，GPU 时间线上是否有空洞？</li>
+<li>是否存在意外的 Host-to-Device 拷贝、dtype 转换或同步？</li>
+<li>哪些 shape 调用了昂贵算子，是否出现大量小 Kernel？</li>
+<li>Tensor 内存分配发生在哪里，峰值前有哪些事件？</li>
+</ul>
+<p>Profiler 不直接回答：</p>
+<ul>
+<li>线上 p99 延迟是否达标；</li>
+<li>系统最大稳定并发是多少；</li>
+<li>优化后是否在所有输入分布上更快；</li>
+<li>Kernel 为什么没有达到硬件峰值。</li>
+</ul>
+<p>端到端负载测试、系统监控、Nsight Systems/Compute 和硬件计数器需要与它配合。</p>
+<h2 id="2-tensor">2. Tensor 内存模型是分析基础<a class="headerlink" href="#2-tensor" title="Permanent link">&para;</a></h2>
+<h3 id="21-tensor">2.1 Tensor 不只是数值<a class="headerlink" href="#21-tensor" title="Permanent link">&para;</a></h3>
+<p>一个普通 Tensor 至少要关注：</p>
+<ul>
+<li><code>shape</code>：每个维度的长度；</li>
+<li><code>stride</code>：沿各维移动一个元素时跨过的存储步长；</li>
+<li><code>dtype</code>：单元素类型和字节数；</li>
+<li><code>device</code>：CPU、CUDA 等设备；</li>
+<li>storage、offset 和内存布局；</li>
+<li>是否跟踪 autograd。</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y</span><span class="o">.</span><span class="n">stride</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">())</span>
+</code></pre></div>
+<p><code>transpose</code> 通常只改变视图元数据，不复制 storage，因此结果可能不连续。
+某些算子能处理任意 stride，某些算子内部会触发连续化或选择不同 Kernel。</p>
+<h3 id="22-viewreshape-contiguous">2.2 view、reshape 与 contiguous<a class="headerlink" href="#22-viewreshape-contiguous" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>view()</code> 要求当前 shape/stride 与目标形状兼容，否则报错。</li>
+<li><code>reshape()</code> 在可能时返回 view，否则可能复制。</li>
+<li><code>contiguous()</code> 在布局不满足要求时创建连续副本。</li>
+</ul>
+<p>不要无条件调用 <code>contiguous()</code>“修复”问题。它可能隐藏一次大拷贝，
+应该在 Profiler 中确认拷贝是否存在，以及下游算子是否真的需要它。</p>
+<div class="highlight"><pre><span></span><code><span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">()</span> <span class="o">==</span> <span class="n">z</span><span class="o">.</span><span class="n">data_ptr</span><span class="p">())</span>
+</code></pre></div>
+<h3 id="23-dtype">2.3 dtype 与显存估算<a class="headerlink" href="#23-dtype" title="Permanent link">&para;</a></h3>
+<p>Tensor 数据的理论字节数：</p>
+<div class="highlight"><pre><span></span><code>numel × element_size
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">bytes_used</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">*</span> <span class="n">tensor</span><span class="o">.</span><span class="n">element_size</span><span class="p">()</span>
+</code></pre></div>
+<p>但进程显存还包含缓存分配器保留空间、临时 workspace、上下文、
+Kernel 库、激活、KV Cache 和碎片。<code>memory_allocated()</code> 与
+<code>memory_reserved()</code> 的含义不同，不能把 <code>nvidia-smi</code> 数值直接当成模型权重大小。</p>
+<h2 id="3">3. 推理模式与测量边界<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li><code>model.eval()</code> 改变 Dropout、BatchNorm 等模块行为，不关闭 autograd。</li>
+<li><code>torch.no_grad()</code> 关闭梯度记录。</li>
+<li><code>torch.inference_mode()</code> 进一步减少部分 autograd 相关开销，但限制更强。</li>
+</ul>
+<p>推理 Benchmark 通常使用 <code>eval()</code> 和 <code>inference_mode()</code>，并在报告中明确记录。
+训练性能分析则必须保留 forward、backward、optimizer 和梯度清零的真实边界。</p>
+<p>首先决定测量哪一层：</p>
+<table>
+<thead>
+<tr>
+<th>边界</th>
+<th>包含内容</th>
+<th>适合回答</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单算子</td>
+<td>一个 op 或 Kernel</td>
+<td>算子实现比较</td>
+</tr>
+<tr>
+<td>模型 forward</td>
+<td>已准备好的 Tensor 输入</td>
+<td>模型计算基线</td>
+</tr>
+<tr>
+<td><code>generate()</code></td>
+<td>tokenization 后到生成完成</td>
+<td>自回归推理行为</td>
+</tr>
+<tr>
+<td>请求端到端</td>
+<td>排队、网络、tokenize、调度、生成</td>
+<td>服务体验</td>
+</tr>
+<tr>
+<td>冷启动</td>
+<td>下载、加载、编译、初始化</td>
+<td>部署启动成本</td>
+</tr>
+</tbody>
+</table>
+<p>不同边界的数字不能直接比较。</p>
+<h2 id="4-cuda">4. CUDA 异步执行与正确计时<a class="headerlink" href="#4-cuda" title="Permanent link">&para;</a></h2>
+<h3 id="41">4.1 为什么普通计时会错<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<p>CUDA Kernel 启动通常是异步的：CPU 把工作提交到 stream 后就可继续执行。
+如果直接用 <code>time.perf_counter()</code> 包围模型调用，测到的可能主要是 CPU 提交时间，
+而不是 GPU 完成时间。</p>
+<p>端到端同步计时：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+<span class="n">elapsed_ms</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+</code></pre></div>
+<p>同步必须在起点和终点都考虑：起点前清空之前遗留的 GPU 工作，
+终点等待本轮工作完成。</p>
+<h3 id="42-cuda-event">4.2 CUDA Event 设备侧计时<a class="headerlink" href="#42-cuda-event" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">start</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Event</span><span class="p">(</span><span class="n">enable_timing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">end</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Event</span><span class="p">(</span><span class="n">enable_timing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">start</span><span class="o">.</span><span class="n">record</span><span class="p">()</span>
+<span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+<span class="n">end</span><span class="o">.</span><span class="n">record</span><span class="p">()</span>
+<span class="n">end</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+<span class="n">elapsed_ms</span> <span class="o">=</span> <span class="n">start</span><span class="o">.</span><span class="n">elapsed_time</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+</code></pre></div>
+<p>Event 在 CUDA stream 时间线上记录，适合测量 GPU 工作区间。
+如果工作跨多个 stream，应明确依赖和完成条件；否则单一 stream 上的 Event
+未必覆盖所有异步工作。</p>
+<h3 id="43-warmup">4.3 warmup 与冷启动<a class="headerlink" href="#43-warmup" title="Permanent link">&para;</a></h3>
+<p>首次运行可能包含：</p>
+<ul>
+<li>CUDA context 初始化；</li>
+<li>库加载、句柄和内存池初始化；</li>
+<li>cuDNN/cuBLAS 算法选择；</li>
+<li>lazy module 或缓存创建；</li>
+<li><code>torch.compile</code> 图捕获、编译和 autotune；</li>
+<li>数据下载、磁盘缓存和页面缓存。</li>
+</ul>
+<p>稳定态 Benchmark 应先 warmup；冷启动成本则单独作为另一项指标报告，
+不能把首次运行静默丢弃后仍称为“启动延迟”。</p>
+<h2 id="5-benchmark">5. Benchmark 的最小规范<a class="headerlink" href="#5-benchmark" title="Permanent link">&para;</a></h2>
+<p>一个可信的基线至少固定并记录：</p>
+<ul>
+<li>模型名称与 revision；</li>
+<li>PyTorch、CUDA、驱动、GPU 和操作系统；</li>
+<li>dtype、device、batch、输入/输出长度和 shape；</li>
+<li>eager、compile、量化和 attention backend；</li>
+<li>warmup 次数、重复次数、同步方式；</li>
+<li>是否包含 tokenize、数据传输、模型加载和生成；</li>
+<li>mean、median、p95、min/max 和原始样本；</li>
+<li>GPU 峰值 allocated/reserved memory。</li>
+</ul>
+<p>不要只报告“tokens/s”。至少说明：</p>
+<ul>
+<li>输入 token 还是输出 token；</li>
+<li>单请求还是所有并发请求总和；</li>
+<li>prefill、decode 还是完整请求；</li>
+<li>是否排除 padding；</li>
+<li>时间窗口和并发策略。</li>
+</ul>
+<h2 id="6-pytorch-profiler">6. PyTorch Profiler 基本用法<a class="headerlink" href="#6-pytorch-profiler" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">torch.profiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProfilerActivity</span><span class="p">,</span> <span class="n">profile</span><span class="p">,</span> <span class="n">record_function</span>
+
+<span class="n">activities</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">]</span>
+<span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+    <span class="n">activities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">profile</span><span class="p">(</span>
+    <span class="n">activities</span><span class="o">=</span><span class="n">activities</span><span class="p">,</span>
+    <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">record_function</span><span class="p">(</span><span class="s2">"model_forward"</span><span class="p">):</span>
+        <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+
+<span class="n">sort_key</span> <span class="o">=</span> <span class="s2">"cuda_time_total"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu_time_total"</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="n">sort_key</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">prof</span><span class="o">.</span><span class="n">export_chrome_trace</span><span class="p">(</span><span class="s2">"profile-trace.json"</span><span class="p">)</span>
+</code></pre></div>
+<p>常用参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>用途</th>
+<th>成本与注意</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>activities</code></td>
+<td>选择 CPU、CUDA 等活动</td>
+<td>不需要的活动不要记录</td>
+</tr>
+<tr>
+<td><code>record_shapes</code></td>
+<td>记录算子输入 shape</td>
+<td>增加数据量和开销</td>
+</tr>
+<tr>
+<td><code>profile_memory</code></td>
+<td>关联 Tensor 内存事件</td>
+<td>不是完整进程显存解释器</td>
+</tr>
+<tr>
+<td><code>with_stack</code></td>
+<td>记录调用栈</td>
+<td>开销和 trace 体积更大</td>
+</tr>
+<tr>
+<td><code>with_modules</code></td>
+<td>尝试记录模块层级</td>
+<td>支持范围依执行模式而异</td>
+</tr>
+<tr>
+<td><code>record_function</code></td>
+<td>标记自定义阶段</td>
+<td>便于关联业务阶段与算子</td>
+</tr>
+</tbody>
+</table>
+<p>Profiler 本身会改变运行时间。它用于定位，不应把 Profiler 打开时的耗时
+当作正式 Benchmark 数字。</p>
+<h2 id="7-schedule">7. 长任务使用 schedule<a class="headerlink" href="#7-schedule" title="Permanent link">&para;</a></h2>
+<p>训练或多轮推理不应记录整个任务，否则 trace 可能巨大：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.profiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProfilerActivity</span><span class="p">,</span> <span class="n">profile</span><span class="p">,</span> <span class="n">schedule</span>
+
+<span class="n">trace_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"results/traces"</span><span class="p">)</span>
+<span class="n">trace_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">profile</span><span class="p">(</span>
+    <span class="n">activities</span><span class="o">=</span><span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">,</span> <span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">],</span>
+    <span class="n">schedule</span><span class="o">=</span><span class="n">schedule</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">on_trace_ready</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">tensorboard_trace_handler</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">trace_dir</span><span class="p">)),</span>
+    <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+        <span class="n">train_step</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+        <span class="n">prof</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div>
+<p>阶段含义：</p>
+<ul>
+<li><code>wait</code>：跳过，不记录；</li>
+<li><code>warmup</code>：让 Profiler 自身进入稳定状态，但不保存；</li>
+<li><code>active</code>：真正记录；</li>
+<li><code>repeat</code>：重复多少个周期。</li>
+</ul>
+<p>每次迭代必须调用 <code>prof.step()</code> 推进状态机。采样窗口要覆盖有代表性的稳定阶段，
+不能只挑最快的一段。</p>
+<h2 id="8-key-averages">8. 如何读 key averages 表<a class="headerlink" href="#8-key-averages" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">table</span> <span class="o">=</span> <span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">(</span><span class="n">group_by_input_shape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">table</span><span class="p">(</span>
+    <span class="n">sort_by</span><span class="o">=</span><span class="s2">"cuda_time_total"</span><span class="p">,</span>
+    <span class="n">row_limit</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+</code></pre></div>
+<p>重点字段：</p>
+<ul>
+<li><strong>Self CPU</strong>：事件自身在 CPU 上的时间，不含子事件；</li>
+<li><strong>CPU total</strong>：包含子事件的 CPU 总时间；</li>
+<li><strong>Self CUDA</strong>：直接归属于事件的 CUDA 时间；</li>
+<li><strong>CUDA total</strong>：包含子事件关联的 CUDA 时间；</li>
+<li><strong># of Calls</strong>：调用次数；</li>
+<li><strong>CPU/CUDA time avg</strong>：平均每次调用时间；</li>
+<li><strong>Input Shapes</strong>：同名算子的 shape 分组；</li>
+<li><strong>CPU Mem / CUDA Mem</strong>：与事件关联的内存变化。</li>
+</ul>
+<p>分析顺序：</p>
+<ol>
+<li>按 total 找影响端到端的大类。</li>
+<li>按 self 找真正执行工作的叶子算子或 Kernel。</li>
+<li>同时看调用次数和平均时间，区分“一次很慢”与“大量很小”。</li>
+<li>按 shape 分组，避免同名算子的不同尺寸被平均掉。</li>
+<li>回到 trace 检查并发、空洞、拷贝和同步，而不是只看聚合表。</li>
+</ol>
+<p>父算子和子算子的 total 时间会重叠，不能把整列简单相加。</p>
+<h2 id="9-cpugpu">9. 如何读 CPU/GPU 时间线<a class="headerlink" href="#9-cpugpu" title="Permanent link">&para;</a></h2>
+<p>在 Chrome Trace、Perfetto 或兼容查看器中，先定位一个完整迭代：</p>
+<div class="highlight"><pre><span></span><code>Python / user annotation
+  → ATen operator
+  → CUDA Runtime launch
+  → GPU stream kernel or memcpy
+</code></pre></div>
+<h3 id="agpu">模式 A：GPU 时间线有大空洞<a class="headerlink" href="#agpu" title="Permanent link">&para;</a></h3>
+<p>可能原因：</p>
+<ul>
+<li>DataLoader 或预处理慢；</li>
+<li>Python 调度和大量小算子；</li>
+<li>CPU-GPU 同步；</li>
+<li>网络或磁盘等待；</li>
+<li>分布式 rank 在 barrier/collective 等待。</li>
+</ul>
+<p>先看空洞前 CPU 正在执行什么，不要仅凭低 GPU 利用率猜测。</p>
+<h3 id="b-kernel">模式 B：大量很短的 Kernel<a class="headerlink" href="#b-kernel" title="Permanent link">&para;</a></h3>
+<p>可能说明 launch overhead 高、算子过碎、batch/shape 太小，
+或存在本可融合的逐元素操作。验证方向包括向量化、批处理、算子融合和 compile，
+但必须重新测量数值正确性、编译成本和动态 shape 行为。</p>
+<h3 id="c-memcpy-dtype-conversion">模式 C：频繁 memcpy 或 dtype conversion<a class="headerlink" href="#c-memcpy-dtype-conversion" title="Permanent link">&para;</a></h3>
+<p>检查输入是否每轮 <code>.to(device)</code>、是否混入 CPU Tensor、是否发生隐式 cast、
+布局转换或 <code>contiguous()</code> 拷贝。优化后要确认数据生命周期和 stream 依赖仍正确。</p>
+<h3 id="dcpu">模式 D：CPU 调用后立刻等待<a class="headerlink" href="#dcpu" title="Permanent link">&para;</a></h3>
+<p>常见同步点：</p>
+<ul>
+<li><code>.item()</code>；</li>
+<li><code>.cpu()</code> / <code>.numpy()</code>；</li>
+<li>打印 CUDA Tensor；</li>
+<li>显式 <code>torch.cuda.synchronize()</code>；</li>
+<li>某些内存查询、异常检查或跨设备操作。</li>
+</ul>
+<p>Benchmark 终点的同步是必要的，但热路径中的意外同步会破坏流水。</p>
+<h2 id="10">10. 内存分析<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
+<h3 id="101-allocated-reserved">10.1 先区分 allocated 与 reserved<a class="headerlink" href="#101-allocated-reserved" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">reset_peak_memory_stats</span><span class="p">()</span>
+<span class="n">run_once</span><span class="p">()</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+
+<span class="n">allocated</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">max_memory_allocated</span><span class="p">()</span>
+<span class="n">reserved</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">max_memory_reserved</span><span class="p">()</span>
+</code></pre></div>
+<ul>
+<li>allocated：活跃 Tensor 由缓存分配器管理的内存；</li>
+<li>reserved：缓存分配器向 CUDA 申请并保留的内存；</li>
+<li><code>nvidia-smi</code>：进程/上下文层面的设备内存观察，口径更宽。</li>
+</ul>
+<h3 id="102-profiler-memory">10.2 Profiler memory 字段怎么用<a class="headerlink" href="#102-profiler-memory" title="Permanent link">&para;</a></h3>
+<p><code>profile_memory=True</code> 可把部分 Tensor 分配/释放关联到算子，适合寻找：</p>
+<ul>
+<li>大型临时 Tensor；</li>
+<li>重复分配；</li>
+<li>dtype/布局转换副本；</li>
+<li>某阶段净增长。</li>
+</ul>
+<p>但内存峰值是时间序列问题，聚合后的净变化可能把“先分配再释放”抵消。
+需要结合时间线、峰值统计和必要时的 memory snapshot 工具分析。</p>
+<h3 id="103-oom">10.3 OOM 排查顺序<a class="headerlink" href="#103-oom" title="Permanent link">&para;</a></h3>
+<ol>
+<li>保存失败配置和错误信息。</li>
+<li>确认权重、激活、KV Cache、workspace 和其他进程的占用。</li>
+<li>比较 allocated、reserved 与设备总占用。</li>
+<li>检查引用是否跨迭代保留，如把带计算图的 Tensor 放进列表。</li>
+<li>用更小 shape 构造最小复现。</li>
+<li>修改 batch、序列长度、dtype 或算法后重新验证正确性与性能。</li>
+</ol>
+<p><code>torch.cuda.empty_cache()</code> 只释放缓存分配器中未使用的缓存给其他应用，
+不会释放仍被 Tensor 引用的内存，也不是修复内存泄漏的通用办法。</p>
+<h2 id="11-record_function">11. 用 record_function 标记业务阶段<a class="headerlink" href="#11-record_function" title="Permanent link">&para;</a></h2>
+<p>ATen 算子名不足以表达“tokenize、prefill、decode、postprocess”等业务语义：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">torch.profiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">record_function</span>
+
+<span class="k">with</span> <span class="n">record_function</span><span class="p">(</span><span class="s2">"prepare_inputs"</span><span class="p">):</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="n">prepare</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">record_function</span><span class="p">(</span><span class="s2">"prefill"</span><span class="p">):</span>
+    <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="n">use_cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">record_function</span><span class="p">(</span><span class="s2">"postprocess"</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">decode</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+</code></pre></div>
+<p>命名要稳定、层级清晰，不要把 request id 等高基数字段放进事件名，
+否则聚合困难且 trace 体积膨胀。</p>
+<h2 id="12">12. 编译、量化与模型压缩分析<a class="headerlink" href="#12" title="Permanent link">&para;</a></h2>
+<h3 id="121-torchcompile">12.1 torch.compile<a class="headerlink" href="#121-torchcompile" title="Permanent link">&para;</a></h3>
+<p>分开报告：</p>
+<ul>
+<li>eager 冷启动；</li>
+<li>compile 首次编译成本；</li>
+<li>编译后稳定态性能；</li>
+<li>新 shape 导致的重编译或 graph break。</li>
+</ul>
+<p>Profiler 中看到的算子和 Kernel 可能因融合而改变。优化目标应是端到端指标，
+不是“算子数量越少越好”。</p>
+<h3 id="122-fake-quant-kernel">12.2 fake quant 不等于低比特 Kernel<a class="headerlink" href="#122-fake-quant-kernel" title="Permanent link">&para;</a></h3>
+<p>fake quant 常用浮点 Tensor 模拟量化误差，可能不会减少模型文件、显存访问或计算。
+必须确认：</p>
+<ul>
+<li>权重实际存储 dtype 和打包格式；</li>
+<li>推理引擎是否识别该格式；</li>
+<li>trace 中是否出现目标量化 GEMM/反量化 Kernel；</li>
+<li>反量化、格式转换和 padding 是否抵消收益；</li>
+<li>精度与端到端延迟是否在同一配置下测量。</li>
+</ul>
+<h3 id="123">12.3 稀疏和剪枝<a class="headerlink" href="#123" title="Permanent link">&para;</a></h3>
+<p>权重中出现零值并不自动加速。需要结构化稀疏格式、硬件支持和对应 Kernel。
+Profiler 应验证 Kernel 是否变化，Benchmark 应验证真实 shape 与 batch 下的收益。</p>
+<h2 id="13-gpu">13. 多 GPU 与分布式场景<a class="headerlink" href="#13-gpu" title="Permanent link">&para;</a></h2>
+<p>单进程 Profiler 只能看到局部视角。分布式分析还要记录：</p>
+<ul>
+<li>rank、local rank、world size 和节点；</li>
+<li>compute stream 与 NCCL collective 的重叠；</li>
+<li>不同 rank 的 straggler；</li>
+<li>barrier、all-reduce、all-gather、reduce-scatter 的时间；</li>
+<li>输入不均衡、网络拓扑和通信量。</li>
+</ul>
+<p>先在单卡建立计算基线，再分析通信；否则容易把单卡效率问题误判为 NCCL 问题。</p>
+<h2 id="14-profiler">14. Profiler 开销与数据安全<a class="headerlink" href="#14-profiler" title="Permanent link">&para;</a></h2>
+<ul>
+<li>只记录代表性窗口，不记录整个长任务。</li>
+<li><code>with_stack</code>、shape 和 memory 信息按问题需要开启。</li>
+<li>trace 可能非常大，不能直接提交 Git。</li>
+<li>stack、路径、算子参数和自定义标记可能暴露用户名、模型路径或业务信息。</li>
+<li>分享前脱敏，并记录 PyTorch 版本，因为字段和查看器支持会变化。</li>
+</ul>
+<p>生产环境启用 Profiler 前要评估开销、存储和隐私；优先在可复现的预生产负载中定位。</p>
+<h2 id="15">15. 常见误区<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<ol>
+<li>CUDA 未同步就报告延迟。</li>
+<li>没有区分冷启动与稳定态。</li>
+<li>只测试一个 shape、batch 或输入长度。</li>
+<li>把 Profiler 打开后的时间当正式性能数字。</li>
+<li>把 CPU total 和 CUDA total 简单相加。</li>
+<li>只看排序表，不看时间线上的空洞和重叠。</li>
+<li>把 <code>nvidia-smi</code> 瞬时利用率当作算子分析。</li>
+<li>把 reserved memory 当成活跃 Tensor 大小。</li>
+<li>把 fake quant、零权重或模型文件变小当成真实加速。</li>
+<li>优化后只看速度，不验证输出正确性和精度。</li>
+<li>只报告最优一次，不保存原始样本和波动。</li>
+<li>trace 未脱敏就上传到公开仓库。</li>
+</ol>
+<h2 id="16-profiler">16. 第一周 Profiler 实战<a class="headerlink" href="#16-profiler" title="Permanent link">&para;</a></h2>
+<p>仓库提供
+<a href="https://github.com/LuHeming/ai-infra-from-research-to-production/tree/main/labs/pytorch/profiler-demo">Profiler Demo</a>。</p>
+<h3 id="atensor">练习 A：Tensor 与布局<a class="headerlink" href="#atensor" title="Permanent link">&para;</a></h3>
+<ol>
+<li>构造连续 Tensor，并通过 transpose 得到非连续 view。</li>
+<li>记录 shape、stride、storage 共享关系和 <code>is_contiguous()</code>。</li>
+<li>对比 <code>view()</code>、<code>reshape()</code> 和 <code>contiguous()</code>。</li>
+<li>用 Profiler 确认何时发生真实拷贝。</li>
+</ol>
+<h3 id="b">练习 B：错误计时与正确计时<a class="headerlink" href="#b" title="Permanent link">&para;</a></h3>
+<p>对同一模型分别使用：</p>
+<ol>
+<li>不同步的 <code>perf_counter()</code>；</li>
+<li>前后同步的 <code>perf_counter()</code>；</li>
+<li>CUDA Event；</li>
+<li>含首次运行和 warmup 后稳定态。</li>
+</ol>
+<p>保存所有原始样本，解释不同结果的原因。</p>
+<h3 id="c">练习 C：算子与时间线<a class="headerlink" href="#c" title="Permanent link">&para;</a></h3>
+<ol>
+<li>导出 Chrome Trace。</li>
+<li>找到一个完整 forward 的 CPU 调用链和 GPU Kernel。</li>
+<li>列出 CUDA total 最高的 10 个算子。</li>
+<li>用 shape 分组，并找出调用次数最多的小算子。</li>
+<li>标记至少一个同步点、memcpy 或 GPU 空洞；若没有，也要记录证据。</li>
+</ol>
+<h3 id="d">练习 D：压缩前后对比<a class="headerlink" href="#d" title="Permanent link">&para;</a></h3>
+<p>选择 FP32/FP16/BF16、真实量化或剪枝中的一种对比：</p>
+<ul>
+<li>固定模型、revision、输入和输出；</li>
+<li>比较精度/输出、延迟分布、吞吐、allocated/reserved memory；</li>
+<li>比较算子与 Kernel 是否变化；</li>
+<li>解释理论压缩收益与实测收益的差异。</li>
+</ul>
+<h2 id="17">17. 第一周完成检查表<a class="headerlink" href="#17" title="Permanent link">&para;</a></h2>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能解释 shape、stride、view、copy 和 contiguous 的关系。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能区分 <code>eval()</code>、<code>no_grad()</code> 和 <code>inference_mode()</code>。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能明确单算子、forward、generate、请求和冷启动测量边界。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能用同步计时和 CUDA Event 获得可信延迟。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能设计 warmup、repeat、shape 和统计方法。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能配置 Profiler 并使用 schedule 控制采样窗口。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能解释 self/total、CPU/CUDA、调用次数和 shape 分组。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能从时间线定位 GPU 空洞、小 Kernel、拷贝和同步。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能区分 allocated、reserved、峰值和进程总显存。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能验证量化或剪枝是否真正改变 Kernel 和端到端指标。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能说明 Profiler 的开销、局限和 trace 隐私风险。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能提交一份包含证据、假设、修改与复测的性能报告。</li>
+</ul>
+<h2 id="18">18. 官方参考<a class="headerlink" href="#18" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.pytorch.org/docs/stable/profiler.html">PyTorch Profiler API</a></li>
+<li><a href="https://docs.pytorch.org/tutorials/recipes/recipes/profiler_recipe.html">PyTorch Profiler Recipe</a></li>
+<li><a href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.Event.html">CUDA Event</a></li>
+<li><a href="https://docs.pytorch.org/docs/stable/generated/torch.Tensor.view.html">Tensor view</a></li>
+<li><a href="https://docs.pytorch.org/docs/stable/storage.html">Tensor storage</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

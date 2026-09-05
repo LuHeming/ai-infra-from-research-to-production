@@ -1,0 +1,2925 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="从大模型压缩研究到 AI Infra 工程实践">
+      
+      
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../python-engineering/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Linux 工程基础 - AI Infra — From Research to Production</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#linux-ai-infra" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="AI Infra — From Research to Production" class="md-header__button md-logo" aria-label="AI Infra — From Research to Production" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AI Infra — From Research to Production
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Linux 工程基础
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  基础
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../01-pytorch/profiler/" class="md-tabs__link">
+          
+  
+  
+  PyTorch
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../02-llm-inference/inference-overview/" class="md-tabs__link">
+          
+  
+  
+  LLM 推理
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../03-model-compression/overview/" class="md-tabs__link">
+          
+  
+  
+  模型压缩
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../04-cuda/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CUDA
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../05-triton/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Triton
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../06-distributed/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  分布式
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../07-serving/" class="md-tabs__link">
+          
+  
+  
+  推理服务
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../08-deployment/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  部署
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../09-benchmarking/benchmark-methodology/" class="md-tabs__link">
+          
+  
+  
+  Benchmark
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../10-interview/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  面试准备
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AI Infra — From Research to Production" class="md-nav__button md-logo" aria-label="AI Infra — From Research to Production" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AI Infra — From Research to Production
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    基础
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    基础
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    学习入口
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux 工程基础
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Linux 工程基础
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 先建立 Linux 心智模型
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-shell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Shell、命令与帮助系统
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Shell、命令与帮助系统">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 命令是怎样被执行的
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 获取帮助
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 命令历史与快捷键
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 文件系统与常用目录
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 文件系统与常用目录">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 目录结构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 查看、创建、复制与移动
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 查看与搜索文本
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-inode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 链接、inode 与磁盘空间
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 标准流、重定向与管道
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 用户、用户组与权限
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 用户、用户组与权限">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 读懂权限
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-sudo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 sudo 与最小权限
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 进程、作业、信号与会话
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 进程、作业、信号与会话">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 找到目标进程
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 信号与退出
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 前后台作业
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-cpu-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. CPU、内存、磁盘与 GPU 观察
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. CPU、内存、磁盘与 GPU 观察">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 CPU 与负载
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-oom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 内存与 OOM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 磁盘与 I/O
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-nvidia-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 NVIDIA GPU
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-systemd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 日志、systemd 与内核消息
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 网络基础与端口排障
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 网络基础与端口排障">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 基本对象
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 下载与接口调试
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-sshtmux-rsync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. SSH、tmux 与 rsync
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. SSH、tmux 与 rsync">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-ssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 SSH
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-tmux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 tmux
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-rsync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 rsync
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. 环境变量、软件包与动态库
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-bash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Bash 脚本最小规范
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. 通用故障排查流程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. 第一周 Linux 实战
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 第一周 Linux 实战">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 A：文件、管道与权限
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 B：进程与资源
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 C：远程开发
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 D：故障定位演练
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. 第一周完成检查表
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-engineering/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python 工程基础
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development-environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发环境
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PyTorch
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PyTorch
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01-pytorch/profiler/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    性能分析与 Profiler
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM 推理
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LLM 推理
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02-llm-inference/inference-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    推理概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02-llm-inference/kv-cache-and-scheduling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    KV Cache 与调度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模型压缩
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    模型压缩
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03-model-compression/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    压缩概览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03-model-compression/compression-deployment-gap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署鸿沟
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../04-cuda/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CUDA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05-triton/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Triton
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06-distributed/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    分布式
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    推理服务
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    推理服务
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../07-serving/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    vLLM 实践
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../08-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    部署
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Benchmark
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Benchmark
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-benchmarking/benchmark-methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    方法论
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../09-benchmarking/llm-serving-benchmark/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM 服务 Benchmark
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../10-interview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    面试准备
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 先建立 Linux 心智模型
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-shell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Shell、命令与帮助系统
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Shell、命令与帮助系统">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 命令是怎样被执行的
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 获取帮助
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 命令历史与快捷键
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 文件系统与常用目录
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 文件系统与常用目录">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 目录结构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 查看、创建、复制与移动
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 查看与搜索文本
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-inode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 链接、inode 与磁盘空间
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 标准流、重定向与管道
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 用户、用户组与权限
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 用户、用户组与权限">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 读懂权限
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-sudo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 sudo 与最小权限
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 进程、作业、信号与会话
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 进程、作业、信号与会话">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 找到目标进程
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 信号与退出
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 前后台作业
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-cpu-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. CPU、内存、磁盘与 GPU 观察
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. CPU、内存、磁盘与 GPU 观察">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 CPU 与负载
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-oom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 内存与 OOM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 磁盘与 I/O
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-nvidia-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 NVIDIA GPU
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-systemd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 日志、systemd 与内核消息
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 网络基础与端口排障
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 网络基础与端口排障">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 基本对象
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 下载与接口调试
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-sshtmux-rsync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. SSH、tmux 与 rsync
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. SSH、tmux 与 rsync">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-ssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 SSH
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-tmux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 tmux
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-rsync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 rsync
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. 环境变量、软件包与动态库
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-bash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Bash 脚本最小规范
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. 通用故障排查流程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. 第一周 Linux 实战
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 第一周 Linux 实战">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 A：文件、管道与权限
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 B：进程与资源
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 C：远程开发
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        练习 D：故障定位演练
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. 第一周完成检查表
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="linux-ai-infra">Linux 工程基础：AI Infra 必备知识与实战<a class="headerlink" href="#linux-ai-infra" title="Permanent link">&para;</a></h1>
+<p>Linux 是 AI Infra 的主要工作环境。本章不追求背完所有命令，而是建立一套能够回答以下问题的工作方法：</p>
+<ol>
+<li>文件、进程、设备和网络连接分别在哪里、由谁拥有？</li>
+<li>一个训练或推理任务正在做什么，为什么慢、为什么退出？</li>
+<li>如何安全地在本机、远程服务器和容器之间移动代码与结果？</li>
+<li>如何留下足够的环境、命令和日志，让实验可以复现？</li>
+</ol>
+<h2 id="1-linux">1. 先建立 Linux 心智模型<a class="headerlink" href="#1-linux" title="Permanent link">&para;</a></h2>
+<p>Linux 可以先理解为四层：</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>作用</th>
+<th>常见观察入口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>硬件</td>
+<td>CPU、内存、磁盘、网卡、GPU</td>
+<td><code>lscpu</code>、<code>free</code>、<code>lsblk</code>、<code>nvidia-smi</code></td>
+</tr>
+<tr>
+<td>内核</td>
+<td>管理进程、内存、设备、文件系统和网络</td>
+<td><code>/proc</code>、<code>/sys</code>、<code>dmesg</code></td>
+</tr>
+<tr>
+<td>用户空间</td>
+<td>Shell、systemd、SSH、Python、CUDA 工具</td>
+<td><code>bash</code>、<code>systemctl</code>、<code>ssh</code></td>
+</tr>
+<tr>
+<td>应用</td>
+<td>训练脚本、推理服务、Benchmark</td>
+<td>Python 进程、日志、指标</td>
+</tr>
+</tbody>
+</table>
+<p>三个重要原则：</p>
+<ul>
+<li><strong>一切皆可通过文件或文件描述符访问</strong>：普通文件、终端、设备、管道和 socket 都可被进程读写。</li>
+<li><strong>进程是资源和权限的基本边界</strong>：排障时先找到 PID，再看它的用户、命令、资源、文件和网络连接。</li>
+<li><strong>退出码和标准流是命令协作协议</strong>：退出码 <code>0</code> 通常表示成功，非 <code>0</code> 表示失败；标准输入、输出和错误让命令可以组合。</li>
+</ul>
+<h2 id="2-shell">2. Shell、命令与帮助系统<a class="headerlink" href="#2-shell" title="Permanent link">&para;</a></h2>
+<h3 id="21">2.1 命令是怎样被执行的<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>Shell 会从左到右解析命令名、参数、重定向和管道，然后在当前目录或 <code>PATH</code> 中寻找可执行文件。</p>
+<div class="highlight"><pre><span></span><code><span class="nb">pwd</span><span class="w">                          </span><span class="c1"># 当前目录</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"</span><span class="nv">$SHELL</span><span class="s2">"</span><span class="w">                </span><span class="c1"># 当前登录 Shell</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"</span><span class="nv">$PATH</span><span class="s2">"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span><span class="s1">':'</span><span class="w"> </span><span class="s1">'\n'</span><span class="w">   </span><span class="c1"># 按行查看命令搜索路径</span>
+<span class="nb">type</span><span class="w"> </span>-a<span class="w"> </span>python<span class="w">               </span><span class="c1"># python 是别名、内建命令还是可执行文件</span>
+which<span class="w"> </span>python<span class="w">                 </span><span class="c1"># PATH 中首先匹配的可执行文件</span>
+<span class="nb">command</span><span class="w"> </span>-v<span class="w"> </span>python<span class="w">            </span><span class="c1"># 脚本中更适合使用的查询方式</span>
+</code></pre></div>
+<p>Shell 会展开变量、通配符和命令替换。无法确定内容时始终给变量加双引号：</p>
+<div class="highlight"><pre><span></span><code><span class="nv">project_dir</span><span class="o">=</span><span class="s2">"</span><span class="nv">$PWD</span><span class="s2">"</span>
+<span class="nb">printf</span><span class="w"> </span><span class="s1">'%s\n'</span><span class="w"> </span><span class="s2">"</span><span class="nv">$project_dir</span><span class="s2">"</span>
+<span class="nv">files</span><span class="o">=</span><span class="k">$(</span>find<span class="w"> </span>docs<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-name<span class="w"> </span><span class="s1">'*.md'</span><span class="k">)</span>
+</code></pre></div>
+<p>双引号允许 <code>$VAR</code> 展开，单引号保留字面内容。不要把不可信字符串拼成命令交给 <code>eval</code>。</p>
+<h3 id="22">2.2 获取帮助<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>man<span class="w"> </span>rsync
+rsync<span class="w"> </span>--help
+apropos<span class="w"> </span><span class="s2">"copy files"</span>
+<span class="nb">help</span><span class="w"> </span><span class="nb">cd</span><span class="w">                      </span><span class="c1"># Bash 内建命令用 help</span>
+</code></pre></div>
+<p>阅读命令说明时重点找：参数格式、默认行为、退出码、是否递归、是否覆盖以及示例。</p>
+<h3 id="23">2.3 命令历史与快捷键<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nb">history</span>
+<span class="nb">history</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>ssh
+</code></pre></div>
+<p>常用快捷键：</p>
+<ul>
+<li><code>Ctrl+C</code>：向前台进程发送 <code>SIGINT</code>。</li>
+<li><code>Ctrl+Z</code>：暂停前台进程，配合 <code>bg</code>、<code>fg</code> 使用。</li>
+<li><code>Ctrl+D</code>：发送输入结束；空 Shell 中通常会退出会话。</li>
+<li><code>Ctrl+R</code>：反向搜索历史命令。</li>
+<li><code>Ctrl+A</code> / <code>Ctrl+E</code>：移动到行首 / 行尾。</li>
+<li><code>Tab</code>：补全命令、路径和部分参数。</li>
+</ul>
+<h2 id="3">3. 文件系统与常用目录<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<h3 id="31">3.1 目录结构<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/home/&lt;user&gt;</code></td>
+<td>用户代码、配置和个人文件</td>
+</tr>
+<tr>
+<td><code>/root</code></td>
+<td>root 用户的家目录，不是文件系统根目录</td>
+</tr>
+<tr>
+<td><code>/etc</code></td>
+<td>系统级配置</td>
+</tr>
+<tr>
+<td><code>/var/log</code></td>
+<td>持久化日志</td>
+</tr>
+<tr>
+<td><code>/tmp</code></td>
+<td>临时文件，可能在重启后清理</td>
+</tr>
+<tr>
+<td><code>/proc</code></td>
+<td>内核提供的进程和系统信息</td>
+</tr>
+<tr>
+<td><code>/sys</code></td>
+<td>设备与内核对象信息</td>
+</tr>
+<tr>
+<td><code>/dev</code></td>
+<td>设备文件，如磁盘和终端</td>
+</tr>
+<tr>
+<td><code>/mnt</code>、<code>/data</code></td>
+<td>常见数据盘或共享存储挂载点，具体以服务器为准</td>
+</tr>
+<tr>
+<td><code>/usr/local</code>、<code>/opt</code></td>
+<td>本地或第三方软件</td>
+</tr>
+</tbody>
+</table>
+<p>Linux 路径区分大小写。绝对路径从 <code>/</code> 开始，相对路径以当前目录为基准；<code>.</code> 表示当前目录，<code>..</code> 表示父目录。</p>
+<h3 id="32">3.2 查看、创建、复制与移动<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>ls<span class="w"> </span>-lah
+find<span class="w"> </span>docs<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-name<span class="w"> </span><span class="s1">'*.md'</span>
+mkdir<span class="w"> </span>-p<span class="w"> </span>benchmarks/raw-results
+cp<span class="w"> </span>-a<span class="w"> </span>source_dir<span class="w"> </span>backup_dir
+mv<span class="w"> </span>old_name<span class="w"> </span>new_name
+touch<span class="w"> </span>run.log
+file<span class="w"> </span>artifact.bin
+stat<span class="w"> </span>artifact.bin
+</code></pre></div>
+<p>使用删除命令前，先用 <code>pwd</code>、<code>realpath</code> 和不带删除动作的查询命令确认范围：</p>
+<div class="highlight"><pre><span></span><code><span class="nb">pwd</span>
+realpath<span class="w"> </span>benchmarks/raw-results
+find<span class="w"> </span>benchmarks/raw-results<span class="w"> </span>-maxdepth<span class="w"> </span><span class="m">1</span><span class="w"> </span>-type<span class="w"> </span>f
+</code></pre></div>
+<p><code>rm -rf</code> 不经过回收站。尤其不要对空变量、通配符展开结果、根目录或家目录执行递归删除。</p>
+<h3 id="33">3.3 查看与搜索文本<a class="headerlink" href="#33" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>less<span class="w"> </span>run.log
+head<span class="w"> </span>-n<span class="w"> </span><span class="m">20</span><span class="w"> </span>run.log
+tail<span class="w"> </span>-n<span class="w"> </span><span class="m">50</span><span class="w"> </span>run.log
+tail<span class="w"> </span>-f<span class="w"> </span>service.log
+rg<span class="w"> </span>-n<span class="w"> </span><span class="s2">"CUDA|out of memory"</span><span class="w"> </span>logs/
+find<span class="w"> </span>.<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-size<span class="w"> </span>+1G
+</code></pre></div>
+<p><code>less</code> 中可用 <code>/keyword</code> 搜索、<code>n</code> 跳到下一个结果、<code>q</code> 退出。代码仓库内搜索优先用 <code>rg</code>，按文件属性查找使用 <code>find</code>。</p>
+<h3 id="34-inode">3.4 链接、inode 与磁盘空间<a class="headerlink" href="#34-inode" title="Permanent link">&para;</a></h3>
+<ul>
+<li>硬链接指向同一个 inode，通常不能跨文件系统。</li>
+<li>符号链接保存另一个路径，可以跨文件系统，但目标删除后会失效。</li>
+<li><code>df</code> 看文件系统剩余空间，<code>du</code> 看目录实际占用，两者回答的问题不同。</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ln<span class="w"> </span>-s<span class="w"> </span>/data/models<span class="w"> </span>models
+readlink<span class="w"> </span>-f<span class="w"> </span>models
+df<span class="w"> </span>-hT
+du<span class="w"> </span>-sh<span class="w"> </span>./*<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-h
+df<span class="w"> </span>-i<span class="w">                         </span><span class="c1"># inode 耗尽也会表现为无法创建文件</span>
+lsblk<span class="w"> </span>-f
+mount<span class="w"> </span><span class="p">|</span><span class="w"> </span>column<span class="w"> </span>-t
+</code></pre></div>
+<p>AI 项目中，模型权重、数据集、编译缓存和 trace 很容易占满磁盘。将大文件放到合适的数据盘，并通过 <code>.gitignore</code> 排除。</p>
+<h2 id="4">4. 标准流、重定向与管道<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<p>每个进程通常有三个标准文件描述符：</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>名称</th>
+<th>默认位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>stdin，标准输入</td>
+<td>键盘或上一个管道</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>stdout，标准输出</td>
+<td>终端或下一个管道</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>stderr，标准错误</td>
+<td>终端</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>benchmark.py<span class="w"> </span>&gt;<span class="w"> </span>run.log<span class="w">              </span><span class="c1"># 覆盖标准输出</span>
+python<span class="w"> </span>benchmark.py<span class="w"> </span>&gt;&gt;<span class="w"> </span>run.log<span class="w">             </span><span class="c1"># 追加标准输出</span>
+python<span class="w"> </span>benchmark.py<span class="w"> </span>&gt;<span class="w"> </span>run.log<span class="w"> </span><span class="m">2</span>&gt;<span class="w"> </span>error.log<span class="w"> </span><span class="c1"># 分开记录</span>
+python<span class="w"> </span>benchmark.py<span class="w"> </span>&gt;<span class="w"> </span>run.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w">          </span><span class="c1"># 合并到同一文件</span>
+python<span class="w"> </span>benchmark.py<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tee<span class="w"> </span>run.log<span class="w">      </span><span class="c1"># 屏幕和文件各一份</span>
+</code></pre></div>
+<p>管道把左侧命令的 stdout 交给右侧命令的 stdin：</p>
+<div class="highlight"><pre><span></span><code>ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>rg<span class="w"> </span><span class="s1">'python|vllm'</span>
+find<span class="w"> </span>.<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span>-name<span class="w"> </span><span class="s1">'*.json'</span><span class="w"> </span>-print0<span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span>-0<span class="w"> </span>-r<span class="w"> </span>du<span class="w"> </span>-h
+</code></pre></div>
+<p>在 Bash 脚本中推荐启用严格模式，并让管道中任一命令失败时整个管道失败：</p>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="nb">set</span><span class="w"> </span>-Eeuo<span class="w"> </span>pipefail
+</code></pre></div>
+<p>使用 <code>$?</code> 查看上一条命令的退出码：</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pytest
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"</span><span class="nv">$?</span><span class="s2">"</span>
+</code></pre></div>
+<h2 id="5">5. 用户、用户组与权限<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<h3 id="51">5.1 读懂权限<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>id
+whoami
+ls<span class="w"> </span>-l<span class="w"> </span>scripts/create_daily_note.py
+</code></pre></div>
+<p><code>-rwxr-x---</code> 可拆成：文件类型、所有者权限、所属组权限、其他用户权限。<code>r</code>、<code>w</code>、<code>x</code> 分别是读、写、执行；对目录而言，<code>x</code> 表示能够进入和访问目录项。</p>
+<div class="highlight"><pre><span></span><code>chmod<span class="w"> </span>u+x<span class="w"> </span>script.sh
+chmod<span class="w"> </span><span class="m">640</span><span class="w"> </span>config.yaml
+chown<span class="w"> </span>user:group<span class="w"> </span>file<span class="w">        </span><span class="c1"># 通常需要管理员权限</span>
+<span class="nb">umask</span>
+</code></pre></div>
+<p>数字权限由 <code>r=4</code>、<code>w=2</code>、<code>x=1</code> 相加。<code>640</code> 表示所有者读写、组只读、其他用户无权限。</p>
+<h3 id="52-sudo">5.2 sudo 与最小权限<a class="headerlink" href="#52-sudo" title="Permanent link">&para;</a></h3>
+<p><code>sudo</code> 只应用在确实需要管理员权限的单条命令上。不要为了省事用 root 运行 Python、Jupyter 或训练任务，否则生成的缓存和结果可能变成普通用户无法修改的 root 文件。</p>
+<p>密钥和配置的常见权限：</p>
+<div class="highlight"><pre><span></span><code>chmod<span class="w"> </span><span class="m">700</span><span class="w"> </span>~/.ssh
+chmod<span class="w"> </span><span class="m">600</span><span class="w"> </span>~/.ssh/id_ed25519
+chmod<span class="w"> </span><span class="m">600</span><span class="w"> </span>.env
+</code></pre></div>
+<p>不要把 token、私钥、<code>.env</code>、云凭据或带签名的下载链接提交到 Git。</p>
+<h2 id="6">6. 进程、作业、信号与会话<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<h3 id="61">6.1 找到目标进程<a class="headerlink" href="#61" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>ps<span class="w"> </span>aux
+ps<span class="w"> </span>-ef<span class="w"> </span>--forest
+pgrep<span class="w"> </span>-af<span class="w"> </span><span class="s1">'python|vllm'</span>
+top
+</code></pre></div>
+<p>每个进程有 PID 和父进程 PPID。排障时记录启动用户、完整命令、启动时间、CPU/内存占用和父子关系。</p>
+<div class="highlight"><pre><span></span><code>ps<span class="w"> </span>-o<span class="w"> </span>pid,ppid,user,stat,%cpu,%mem,etime,cmd<span class="w"> </span>-p<span class="w"> </span>&lt;PID&gt;
+tr<span class="w"> </span><span class="s1">'\0'</span><span class="w"> </span><span class="s1">' '</span><span class="w"> </span>&lt;<span class="w"> </span>/proc/&lt;PID&gt;/cmdline
+ls<span class="w"> </span>-l<span class="w"> </span>/proc/&lt;PID&gt;/fd
+cat<span class="w"> </span>/proc/&lt;PID&gt;/status
+</code></pre></div>
+<h3 id="62">6.2 信号与退出<a class="headerlink" href="#62" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nb">kill</span><span class="w"> </span>-TERM<span class="w"> </span>&lt;PID&gt;<span class="w">             </span><span class="c1"># 请求进程优雅退出</span>
+<span class="nb">kill</span><span class="w"> </span>-INT<span class="w"> </span>&lt;PID&gt;<span class="w">              </span><span class="c1"># 类似 Ctrl+C</span>
+<span class="nb">kill</span><span class="w"> </span>-KILL<span class="w"> </span>&lt;PID&gt;<span class="w">             </span><span class="c1"># 最后手段，进程无法清理资源</span>
+</code></pre></div>
+<p>先发送 <code>SIGTERM</code> 并等待；只有进程无响应且确认 PID 正确时才使用 <code>SIGKILL</code>。进程被信号终止时，Shell 中常见退出码为 <code>128 + 信号编号</code>，例如 <code>137</code> 往往表示收到 <code>SIGKILL</code>，但还需结合内核日志判断是否为 OOM Killer。</p>
+<h3 id="63">6.3 前后台作业<a class="headerlink" href="#63" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>train.py<span class="w"> </span>&gt;<span class="w"> </span>train.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="nb">jobs</span><span class="w"> </span>-l
+<span class="nb">fg</span><span class="w"> </span>%1
+<span class="nb">bg</span><span class="w"> </span>%1
+<span class="nb">wait</span><span class="w"> </span>&lt;PID&gt;
+</code></pre></div>
+<p>单纯在命令末尾加 <code>&amp;</code> 不保证 SSH 断开后进程继续运行。长任务优先使用任务调度系统；个人调试可使用 <code>tmux</code>。<code>nohup</code> 适合简单场景，但不提供资源调度、重试和完整状态管理。</p>
+<h2 id="7-cpu-gpu">7. CPU、内存、磁盘与 GPU 观察<a class="headerlink" href="#7-cpu-gpu" title="Permanent link">&para;</a></h2>
+<h3 id="71-cpu">7.1 CPU 与负载<a class="headerlink" href="#71-cpu" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>lscpu
+uptime
+top
+pidstat<span class="w"> </span>-p<span class="w"> </span>&lt;PID&gt;<span class="w"> </span><span class="m">1</span><span class="w">           </span><span class="c1"># 通常由 sysstat 提供</span>
+</code></pre></div>
+<p>Load Average 表示可运行或不可中断等待的任务数量，不等于 CPU 使用率。解释负载时要同时考虑逻辑 CPU 数量、I/O 等待以及任务是否被 CPU 配额限制。</p>
+<h3 id="72-oom">7.2 内存与 OOM<a class="headerlink" href="#72-oom" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>free<span class="w"> </span>-h
+vmstat<span class="w"> </span><span class="m">1</span>
+ps<span class="w"> </span>-eo<span class="w"> </span>pid,user,rss,vsz,cmd<span class="w"> </span>--sort<span class="o">=</span>-rss<span class="w"> </span><span class="p">|</span><span class="w"> </span>head
+dmesg<span class="w"> </span>-T<span class="w"> </span><span class="p">|</span><span class="w"> </span>rg<span class="w"> </span>-i<span class="w"> </span><span class="s1">'out of memory|killed process'</span>
+</code></pre></div>
+<ul>
+<li>RSS 是进程当前驻留在物理内存中的页。</li>
+<li>VSZ 是虚拟地址空间，不等于实际物理内存占用。</li>
+<li>Linux 会利用空闲内存做缓存，判断是否紧张应重点看 <code>available</code>，不能只看 <code>free</code>。</li>
+<li>容器或作业系统中的 OOM 可能由 cgroup 限额触发，即使宿主机仍有空闲内存。</li>
+</ul>
+<h3 id="73-io">7.3 磁盘与 I/O<a class="headerlink" href="#73-io" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>df<span class="w"> </span>-hT
+du<span class="w"> </span>-sh<span class="w"> </span>~/.cache/*<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-h
+iostat<span class="w"> </span>-xz<span class="w"> </span><span class="m">1</span><span class="w">                 </span><span class="c1"># 通常由 sysstat 提供</span>
+lsof<span class="w"> </span>-p<span class="w"> </span>&lt;PID&gt;<span class="w">                </span><span class="c1"># 进程打开的文件</span>
+lsof<span class="w"> </span>+L1<span class="w">                     </span><span class="c1"># 已删除但仍被进程占用的文件</span>
+</code></pre></div>
+<p>如果 <code>df</code> 显示空间不足但 <code>du</code> 找不到大文件，检查被删除但仍打开的文件、挂载点差异、文件系统配额和 inode。</p>
+<h3 id="74-nvidia-gpu">7.4 NVIDIA GPU<a class="headerlink" href="#74-nvidia-gpu" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>nvidia-smi
+nvidia-smi<span class="w"> </span>pmon<span class="w"> </span>-s<span class="w"> </span>um<span class="w"> </span>-d<span class="w"> </span><span class="m">1</span>
+watch<span class="w"> </span>-n<span class="w"> </span><span class="m">1</span><span class="w"> </span>nvidia-smi
+</code></pre></div>
+<p>重点看 GPU 利用率、显存占用、功耗、温度、时钟、进程 PID 和驱动版本。注意：</p>
+<ul>
+<li><code>nvidia-smi</code> 的瞬时利用率只是采样值，不能代替 Profiler。</li>
+<li>有显存占用不等于 GPU 正在计算。</li>
+<li>GPU 利用率低可能是 CPU 数据准备、磁盘、网络、同步或小 Kernel 启动开销导致。</li>
+<li>进程退出后显存仍占用时，先核对 PID、容器命名空间和残留子进程，不要直接重启服务器。</li>
+</ul>
+<h2 id="8-systemd">8. 日志、systemd 与内核消息<a class="headerlink" href="#8-systemd" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>journalctl<span class="w"> </span>-b<span class="w">                           </span><span class="c1"># 本次启动日志</span>
+journalctl<span class="w"> </span>-u<span class="w"> </span>ssh<span class="w"> </span>--since<span class="w"> </span>today
+journalctl<span class="w"> </span>-f<span class="w">                           </span><span class="c1"># 持续跟踪</span>
+systemctl<span class="w"> </span>status<span class="w"> </span>&lt;service&gt;
+systemctl<span class="w"> </span>list-units<span class="w"> </span>--type<span class="o">=</span>service
+dmesg<span class="w"> </span>-T<span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-n<span class="w"> </span><span class="m">100</span>
+</code></pre></div>
+<p>诊断服务时区分三类信息：</p>
+<ol>
+<li>应用日志：请求、异常和业务状态。</li>
+<li>服务管理器日志：启动命令、退出码、重启行为和环境。</li>
+<li>内核日志：OOM、磁盘、驱动、网络和硬件问题。</li>
+</ol>
+<p>部分日志需要管理员权限。不要在公开 issue 中粘贴含用户名、内网地址、token、完整环境变量或数据路径的日志。</p>
+<h2 id="9">9. 网络基础与端口排障<a class="headerlink" href="#9" title="Permanent link">&para;</a></h2>
+<h3 id="91">9.1 基本对象<a class="headerlink" href="#91" title="Permanent link">&para;</a></h3>
+<ul>
+<li>IP 标识网络接口地址。</li>
+<li>端口标识主机上的服务入口。</li>
+<li>DNS 把域名解析为地址。</li>
+<li>TCP 提供可靠字节流；UDP 不建立连接、开销更低。</li>
+<li><code>127.0.0.1</code> 只允许本机访问；<code>0.0.0.0</code> 表示监听所有 IPv4 接口，不代表一个可访问的目标地址。</li>
+</ul>
+<div class="highlight"><pre><span></span><code>ip<span class="w"> </span>addr
+ip<span class="w"> </span>route
+getent<span class="w"> </span>hosts<span class="w"> </span>github.com
+ss<span class="w"> </span>-lntp
+ss<span class="w"> </span>-ntp
+curl<span class="w"> </span>-v<span class="w"> </span>http://127.0.0.1:8000/health
+</code></pre></div>
+<p>服务无法访问时按顺序检查：进程是否存在、端口是否监听、绑定地址是否正确、本机请求是否成功、防火墙或安全组是否放行、DNS/代理是否正确。</p>
+<h3 id="92">9.2 下载与接口调试<a class="headerlink" href="#92" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-fL<span class="w"> </span>-o<span class="w"> </span>artifact.tar.gz<span class="w"> </span><span class="s1">'https://example.com/artifact.tar.gz'</span>
+curl<span class="w"> </span>-fsS<span class="w"> </span>http://127.0.0.1:8000/health
+</code></pre></div>
+<p>下载大模型或数据时记录 URL、版本或 commit、校验和与许可协议。对重要文件使用 <code>sha256sum</code> 验证完整性。</p>
+<h2 id="10-sshtmux-rsync">10. SSH、tmux 与 rsync<a class="headerlink" href="#10-sshtmux-rsync" title="Permanent link">&para;</a></h2>
+<h3 id="101-ssh">10.1 SSH<a class="headerlink" href="#101-ssh" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>ssh-keygen<span class="w"> </span>-t<span class="w"> </span>ed25519<span class="w"> </span>-C<span class="w"> </span><span class="s2">"your-name@device"</span>
+ssh<span class="w"> </span>user@gpu-server
+ssh<span class="w"> </span>-J<span class="w"> </span>user@jump-host<span class="w"> </span>user@gpu-server
+ssh<span class="w"> </span>-L<span class="w"> </span><span class="m">8888</span>:127.0.0.1:8888<span class="w"> </span>user@gpu-server
+</code></pre></div>
+<p><code>~/.ssh/config</code> 示例：</p>
+<div class="highlight"><pre><span></span><code>Host gpu-dev
+    HostName gpu.example.com
+    User alice
+    IdentityFile ~/.ssh/id_ed25519
+    ServerAliveInterval 60
+</code></pre></div>
+<p>不要上传私钥。首次连接要核对服务器主机指纹；主机指纹意外变化时先联系管理员确认，不要直接删除 <code>known_hosts</code> 记录绕过检查。</p>
+<h3 id="102-tmux">10.2 tmux<a class="headerlink" href="#102-tmux" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>tmux<span class="w"> </span>new<span class="w"> </span>-s<span class="w"> </span>profiling
+tmux<span class="w"> </span>ls
+tmux<span class="w"> </span>attach<span class="w"> </span>-t<span class="w"> </span>profiling
+</code></pre></div>
+<p>默认前缀是 <code>Ctrl+B</code>：</p>
+<ul>
+<li><code>Ctrl+B</code> 后按 <code>d</code>：退出当前会话但保持任务运行。</li>
+<li><code>Ctrl+B</code> 后按 <code>c</code>：新建窗口。</li>
+<li><code>Ctrl+B</code> 后按 <code>n</code> / <code>p</code>：切换下一个 / 上一个窗口。</li>
+<li><code>Ctrl+B</code> 后按 <code>[</code>：进入复制和滚动模式。</li>
+</ul>
+<h3 id="103-rsync">10.3 rsync<a class="headerlink" href="#103-rsync" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>rsync<span class="w"> </span>-avh<span class="w"> </span>--progress<span class="w"> </span>./<span class="w"> </span>user@gpu-dev:~/project/
+rsync<span class="w"> </span>-avh<span class="w"> </span>--dry-run<span class="w"> </span>--delete<span class="w"> </span>./docs/<span class="w"> </span>user@gpu-dev:~/project/docs/
+</code></pre></div>
+<p><code>--delete</code> 会删除目标端不存在于源端的文件，必须先使用 <code>--dry-run</code> 核对。同步代码优先使用 Git；<code>rsync</code> 更适合实验产物、数据和无法进入版本控制的文件。</p>
+<h2 id="11">11. 环境变量、软件包与动态库<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>env<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort
+printenv<span class="w"> </span>PATH
+<span class="nb">export</span><span class="w"> </span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span>
+python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-dev.txt
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>freeze
+</code></pre></div>
+<p>优先使用 <code>python -m pip</code>，避免 <code>pip</code> 与 <code>python</code> 指向不同环境。定位包和动态库问题：</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">'import sys; print(sys.executable); print(*sys.path, sep="\n")'</span>
+python<span class="w"> </span>-c<span class="w"> </span><span class="s1">'import torch; print(torch.__file__)'</span>
+ldd<span class="w"> </span>/path/to/library.so
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"</span><span class="nv">$LD_LIBRARY_PATH</span><span class="s2">"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span><span class="s1">':'</span><span class="w"> </span><span class="s1">'\n'</span>
+</code></pre></div>
+<p><code>PATH</code> 决定可执行文件搜索顺序，<code>LD_LIBRARY_PATH</code> 会影响动态库加载。不要把未经理解的大段环境修改永久写入 <code>.bashrc</code>；先在当前 Shell 验证，并记录修改原因。</p>
+<p>在 Ubuntu/Debian 中：</p>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>update
+apt<span class="w"> </span>search<span class="w"> </span>&lt;package&gt;
+apt<span class="w"> </span>show<span class="w"> </span>&lt;package&gt;
+sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>&lt;package&gt;
+</code></pre></div>
+<p>区分 NVIDIA 驱动、系统 CUDA Toolkit、Python 环境中的 CUDA Runtime 和 PyTorch 构建版本。它们相关但不是同一个组件，不要仅凭 <code>nvcc --version</code> 判断 PyTorch 实际使用的 CUDA 版本。</p>
+<h2 id="12-bash">12. Bash 脚本最小规范<a class="headerlink" href="#12-bash" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/usr/bin/env bash</span>
+<span class="nb">set</span><span class="w"> </span>-Eeuo<span class="w"> </span>pipefail
+
+<span class="nb">readonly</span><span class="w"> </span><span class="nv">project_dir</span><span class="o">=</span><span class="s2">"</span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="nv">$PWD</span><span class="si">}</span><span class="s2">"</span>
+
+<span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span>!<span class="w"> </span>-d<span class="w"> </span><span class="s2">"</span><span class="nv">$project_dir</span><span class="s2">"</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="nb">printf</span><span class="w"> </span><span class="s1">'directory not found: %s\n'</span><span class="w"> </span><span class="s2">"</span><span class="nv">$project_dir</span><span class="s2">"</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+<span class="w">    </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
+<span class="k">fi</span>
+
+<span class="nb">printf</span><span class="w"> </span><span class="s1">'project=%s\n'</span><span class="w"> </span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span><span class="s2">"</span><span class="nv">$project_dir</span><span class="s2">"</span><span class="k">)</span><span class="s2">"</span>
+</code></pre></div>
+<p>建议：</p>
+<ul>
+<li>变量引用使用双引号：<code>"$value"</code>。</li>
+<li>路径和参数通过命令行传入，不硬编码个人目录。</li>
+<li>失败时输出到 stderr 并返回非零退出码。</li>
+<li>用 <code>mktemp -d</code> 创建临时目录，用 <code>trap</code> 清理。</li>
+<li>用 ShellCheck 做静态检查。</li>
+<li>复杂的数据处理和业务逻辑使用 Python，而不是无限扩张 Bash 脚本。</li>
+</ul>
+<h2 id="13">13. 通用故障排查流程<a class="headerlink" href="#13" title="Permanent link">&para;</a></h2>
+<p>遇到“任务慢、服务不通、进程消失、磁盘写不进去”时，遵循以下流程：</p>
+<ol>
+<li><strong>定义现象</strong>：期望、实际、首次发生时间、是否稳定复现。</li>
+<li><strong>保留现场</strong>：记录完整命令、退出码、日志、PID、环境和版本。</li>
+<li><strong>确认作用域</strong>：单个进程、用户、容器、节点，还是整个集群。</li>
+<li><strong>从外到内检查资源</strong>：磁盘、内存、CPU、GPU、网络、权限。</li>
+<li><strong>建立最小复现</strong>：固定输入，移除无关组件，只改变一个变量。</li>
+<li><strong>验证假设</strong>：每次操作前写下预期观察，避免无目标地尝试命令。</li>
+<li><strong>记录结论与局限</strong>：将稳定结论沉淀到 <code>docs/</code>，个案进入 <code>troubleshooting/</code>。</li>
+</ol>
+<p>一个最小现场采集清单：</p>
+<div class="highlight"><pre><span></span><code>date<span class="w"> </span>--iso-8601<span class="o">=</span>seconds
+hostname
+whoami
+<span class="nb">pwd</span>
+git<span class="w"> </span>rev-parse<span class="w"> </span>HEAD
+uname<span class="w"> </span>-a
+uptime
+free<span class="w"> </span>-h
+df<span class="w"> </span>-hT
+nvidia-smi
+python<span class="w"> </span>--version
+python<span class="w"> </span>-c<span class="w"> </span><span class="s1">'import torch; print(torch.__version__, torch.version.cuda)'</span>
+</code></pre></div>
+<p>公开前需删除主机名、用户名、内网 IP、凭据和不应公开的数据路径。</p>
+<h2 id="14-linux">14. 第一周 Linux 实战<a class="headerlink" href="#14-linux" title="Permanent link">&para;</a></h2>
+<h3 id="a">练习 A：文件、管道与权限<a class="headerlink" href="#a" title="Permanent link">&para;</a></h3>
+<ol>
+<li>创建 <code>~/ai-infra-lab/logs</code> 和 <code>results</code>。</li>
+<li>用一条管道找出项目内最大的 10 个文件。</li>
+<li>运行一个同时输出 stdout 和 stderr 的 Python 命令，并分别保存两类输出。</li>
+<li>创建一个只允许所有者读写的配置文件，解释其数字权限。</li>
+</ol>
+<p>验收：能够说明绝对/相对路径、<code>df</code>/<code>du</code>、stdout/stderr 和目录 <code>x</code> 权限的区别。</p>
+<h3 id="b">练习 B：进程与资源<a class="headerlink" href="#b" title="Permanent link">&para;</a></h3>
+<ol>
+<li>启动一个持续运行的 Python 进程并记录 PID。</li>
+<li>使用 <code>ps</code>、<code>top</code> 和 <code>/proc/&lt;PID&gt;</code> 查看命令、资源与文件描述符。</li>
+<li>先用 <code>SIGTERM</code> 结束，记录退出行为；再解释为什么不应默认使用 <code>SIGKILL</code>。</li>
+<li>查看系统内存、磁盘和 GPU 状态，保存为带时间戳的文本记录。</li>
+</ol>
+<p>验收：给定一个 PID，能在 5 分钟内回答“谁启动、运行多久、占用什么资源、在读写什么”。</p>
+<h3 id="c">练习 C：远程开发<a class="headerlink" href="#c" title="Permanent link">&para;</a></h3>
+<ol>
+<li>配置一个 SSH Host 别名并用密钥登录测试机。</li>
+<li>创建 <code>tmux</code> 会话，在其中运行任务，断开 SSH 后重新连接。</li>
+<li>用 <code>rsync --dry-run</code> 预览一次同步，再执行同步。</li>
+<li>使用本地端口转发访问远程 Jupyter 或测试服务。</li>
+</ol>
+<p>验收：断网或关闭终端后任务仍可恢复查看，且没有在仓库中提交私钥或 token。</p>
+<h3 id="d">练习 D：故障定位演练<a class="headerlink" href="#d" title="Permanent link">&para;</a></h3>
+<p>从以下场景选择一个，填写 <code>templates/troubleshooting-template.md</code>：</p>
+<ul>
+<li>端口已被占用。</li>
+<li>磁盘空间或 inode 耗尽。</li>
+<li>Python 与 pip 指向不同环境。</li>
+<li>进程收到 <code>SIGKILL</code> 或发生内存不足。</li>
+<li>GPU 有显存占用但利用率很低。</li>
+</ul>
+<p>验收：记录复现步骤、证据、根因、修复方法、验证方式和预防措施。</p>
+<h2 id="15">15. 第一周完成检查表<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能解释 Linux 用户空间、内核、进程和文件描述符的关系。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能安全地查找、复制、移动、同步和清理文件。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能组合管道、重定向并检查退出码。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能读懂并正确设置文件与目录权限。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能定位进程并使用合适的信号结束它。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能判断 CPU、内存、磁盘、GPU 或网络是否为当前瓶颈。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能从应用日志、systemd 日志和内核日志收集证据。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能通过 SSH、tmux 和 rsync 完成远程实验工作流。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能解释 Python 环境、<code>PATH</code>、动态库和 CUDA 组件的边界。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled/><span class="task-list-indicator"></span></label> 能提交一份已脱敏、可复现的排错记录。</li>
+</ul>
+<p>完成这些项目后，再进入 PyTorch 正确计时和 Profiler。Linux 观察工具回答“系统发生了什么”，Profiler 回答“框架和算子内部发生了什么”，两类证据应互相验证。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
