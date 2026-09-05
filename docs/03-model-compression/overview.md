@@ -1,11 +1,7 @@
 # 大模型压缩概览
-
 模型压缩的工程目标，是在可接受的质量损失下减少存储、显存、计算、带宽或服务成本。不同方法优化的资源不同，因此不能只用“压缩率”评价。
-
-## 1. 先定义优化目标
-
+## 1. 定义优化目标
 LLM 推理的主要成本包括：
-
 ```text
 Checkpoint 存储
 + 模型权重显存
@@ -18,7 +14,6 @@ Checkpoint 存储
 ```
 
 不同方法直接影响的对象不同：
-
 | 方法 | 直接改变 | 可能改善 | 不会自动改善 |
 | --- | --- | --- | --- |
 | Weight-only quantization | 权重 bit-width | 文件、权重显存、权重带宽 | KV Cache、激活 |
@@ -29,15 +24,11 @@ Checkpoint 存储
 | 低秩分解 | 矩阵秩 | 参数、理论 FLOPs | Kernel Launch 数 |
 | 蒸馏 | 模型架构 | 长期推理成本 | 训练与数据成本 |
 
-目标应写成可验证条件，例如：“在 PPL 增幅不超过 0.2 时，把 TPOT p95 降低 20%”。
-
 ## 2. 四层评价框架
-
 ### 算法层
-
 检查压缩后模型是否正确：
 
-- Weight/Output MSE；
+- Weight/Activation MSE；
 - Cosine similarity；
 - Logit KL divergence；
 - PPL；
@@ -45,10 +36,8 @@ Checkpoint 存储
 - 生成质量、安全和领域能力。
 
 ### 表示层
-
 检查压缩结果如何保存：
-
-- 真实 dtype 与 logical dtype；
+- 真实dtype与 logical dtype；
 - Packed layout；
 - Scale、zero-point、codebook；
 - Group size、block size；
@@ -57,9 +46,7 @@ Checkpoint 存储
 - Checkpoint 能否独立重新加载。
 
 ### Kernel 层
-
 检查实际执行：
-
 - PyTorch operator；
 - CUDA/Triton Kernel 名；
 - 输入、权重、输出 dtype；
@@ -69,9 +56,7 @@ Checkpoint 存储
 - Dynamic Shape 与 graph break。
 
 ### 系统层
-
 检查最终收益：
-
 - Checkpoint bytes；
 - 加载时间和峰值显存；
 - Prefill、TTFT；
@@ -83,7 +68,6 @@ Checkpoint 存储
 四层必须同时记录。算法误差小但没有对应 Kernel，不能得出部署加速结论。
 
 ## 3. 量化术语
-
 - W8A16：8-bit 权重，16-bit 激活；
 - W4A16：4-bit 权重，16-bit 激活；
 - W8A8：8-bit 权重与激活；
@@ -91,36 +75,26 @@ Checkpoint 存储
 - PTQ：Post-Training Quantization；
 - QAT：Quantization-Aware Training。
 
-“16”可能是 FP16 或 BF16；“4”可能是 INT4、NF4、FP4 等格式。报告必须写完整。
-
 ## 4. Affine Quantization
 
 浮点到整数：
-
 `q = clamp(round(x / scale) + zero_point, q_min, q_max)`
-
 反量化：
-
 `x_hat = scale × (q - zero_point)`
 
 ### 对称量化
 
 通常令 zero_point 为 0：
-
 `scale = max(abs(x)) / q_max`
-
 实现简单，但分布不对称时可能浪费量化范围。
 
 ### 非对称量化
 
 `scale = (x_max - x_min) / (q_max - q_min)`
-
 `zero_point = round(q_min - x_min / scale)`
-
 它能覆盖非对称分布，但 zero-point 可能增加执行复杂度。
 
 ### 误差来源
-
 - 舍入与饱和；
 - Clipping 范围；
 - Scale/zero-point 估计；
@@ -141,9 +115,7 @@ Checkpoint 存储
 | Per-block | 二维 Block | 灵活 | Layout 与 Kernel 约束 |
 
 Group 越小通常误差越低，但 Scale 更多，打包和 Kernel 限制也更强。
-
 假设 N 个权重、每个 b bit、每 G 个权重一个 s-byte Scale：
-
 `bytes ≈ N × b / 8 + N / G × s + zero-point 与其他元数据`
 
 因此 INT4 相对 FP16 不一定正好缩小 4 倍。
